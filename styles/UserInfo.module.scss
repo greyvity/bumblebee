@@ -1,0 +1,42 @@
+.wrapper {
+  width: 90%;
+  grid-area: 5 / 2 / span 4 / 3;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  height: 300px;
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 90%;
+
+    .profile {
+      display: flex;
+      align-items: center;
+
+      .information {
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+        margin-left: 20px;
+
+        .editContainer {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        span {
+          color: blue;
+          height: 100%;
+        }
+      }
+    }
+  }
+}
+
+.title {
+  font-family: Montserrat;
+  font-size: 24px;
+  margin-top: 5px;
+}

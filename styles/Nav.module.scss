@@ -1,0 +1,48 @@
+.wrapper {
+  width: 100vw;
+  height: 150px;
+  position: absolute;
+
+  .header {
+    width: 88%;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .nav {
+      ul {
+        align-items: center;
+        display: flex;
+
+        .item {
+          list-style-type: none;
+
+          .signup {
+            border: 5px solid #49574e;
+            border-radius: 50px;
+            padding: 10px 36px;
+          }
+
+          h1 {
+            font-weight: 500;
+            font-size: 24px;
+            margin-left: 80px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  width: 500px;
+
+  & > div {
+    width: 100%;
+    padding-top: 0px;
+  }
+}

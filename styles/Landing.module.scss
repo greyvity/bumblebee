@@ -1,0 +1,44 @@
+// .main {
+//   width: 100vw;
+//   background-color: red;
+// }
+
+.main {
+  height: calc(100vh - 150px);
+  margin-top: 150px;
+  width: 100%;
+  grid-area: 1 / 1 / span all / span all;
+  justify-self: center;
+
+  .container {
+    width: 88%;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .textContainer {
+    flex: 3;
+    h1 {
+      font-family: Montserrat;
+      font-size: 55px;
+      margin-bottom: 33px;
+    }
+
+    h3 {
+      font-weight: 500;
+      font-size: 28px;
+      margin-bottom: 44px;
+    }
+  }
+
+  .imageContainer {
+    flex: 2;
+    text-align: right;
+
+    img {
+    }
+  }
+}
