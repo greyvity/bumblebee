@@ -1,12 +1,10 @@
 .wrapper {
-  // height: 80%;
   width: 90%;
   height: 90%;
   grid-area: 3 / 3 / span 5 / 4;
   align-self: center;
   border: 5.11831px solid #626262;
   border-radius: 12.284px;
-  //   justify-self: center;
   padding: 35px;
   padding-top: 25px;
   padding-bottom: 0;
@@ -16,7 +14,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    // justify-content: space-between;
     overflow: auto;
 
     &::-webkit-scrollbar {

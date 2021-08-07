@@ -1,8 +1,11 @@
 import styles from "../../styles/Notifications.module.scss";
 import { motion } from "framer-motion";
 import Item from "./Item";
+import { useData } from "../../Context/DataContext";
 
 const Notifications = () => {
+  const { notifs } = useData();
+
   return (
     <motion.div
       initial={{ x: 500, opacity: 0 }}
@@ -20,8 +23,8 @@ const Notifications = () => {
       <div className={styles.container}>
         <h1 className={styles.title}> {notifIcon} Notifications </h1>
         <motion.div className={styles.itemContainer}>
-          {notifs.map((notif) => (
-            <Item key={notif.id} item={notif} />
+          {notifs?.map((notif) => (
+            <Item key={notif.agent_id} item={notif} />
           ))}
         </motion.div>
       </div>
@@ -55,62 +58,3 @@ const notifIcon = (
     />
   </svg>
 );
-
-const notifs = [
-  {
-    id: 1,
-    user: "Image",
-    profileUrl: "/profile/image",
-    postUrl: "/posts",
-    time: "2s",
-    avatar: 0,
-  },
-  {
-    id: 2,
-    user: "Image",
-    profileUrl: "/profile/image",
-    postUrl: "/posts",
-    time: "2s",
-    avatar: 0,
-  },
-  {
-    id: 3,
-    user: "Sambeg",
-    profileUrl: "/profile/image",
-    postUrl: "/posts",
-    time: "2s",
-    avatar: 1,
-  },
-  {
-    id: 4,
-    user: "Sajag",
-    profileUrl: "/profile/image",
-    postUrl: "/posts",
-    time: "2s",
-    avatar: 1,
-  },
-  {
-    id: 5,
-    user: "Image",
-    profileUrl: "/profile/image",
-    postUrl: "/posts",
-    time: "2s",
-    avatar: 0,
-  },
-  {
-    id: 6,
-    user: "Image",
-    profileUrl: "/profile/image",
-    postUrl: "/posts",
-    time: "2s",
-    avatar: 0,
-  },
-  {
-    id: 7,
-    user: "Image",
-    profileUrl: "/profile/image",
-    postUrl: "/posts",
-    time: "2s",
-    avatar: 0,
-  },
-];

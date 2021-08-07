@@ -1,6 +1,7 @@
 import styles from "../../styles/Feed.module.scss";
 import CardItem from "./CardItem";
 import { motion } from "framer-motion";
+import { useData } from "../../Context/DataContext";
 
 const data = [
   {
@@ -42,6 +43,8 @@ const data = [
 ];
 
 const Feed = () => {
+  const { feed } = useData();
+
   return (
     <motion.div
       // initial={{ y: 500, opacity: 0 }}
@@ -57,8 +60,8 @@ const Feed = () => {
     >
       <div className={styles.container}>
         <h1 className={styles.title}>News Feed</h1>
-        {data.map((post) => (
-          <CardItem key={post.id} post={post} />
+        {feed?.map((post) => (
+          <CardItem key={post.buzzid} post={post} />
         ))}
       </div>
     </motion.div>

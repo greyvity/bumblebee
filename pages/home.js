@@ -5,8 +5,12 @@ import Feed from "../Components/Home/Feed";
 import OnYourMind from "../Components/OnYourMind";
 import { motion } from "framer-motion";
 import router from "next/router";
+import { useEffect } from "react";
+import { useAuth } from "../Context/AuthContext";
 
 export default function Home() {
+  const { isLoggedIn } = useAuth();
+
   useEffect(() => {
     if (!isLoggedIn) router.push("/");
   }, [isLoggedIn]);
@@ -97,12 +101,12 @@ export default function Home() {
   );
 }
 
-export async function getServerSideProps() {
-  // Fetch data from external API
-  const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/feed/post`);
-  const data = await res.json();
-  console.log(data);
+// export async function getServerSideProps() {
+//   // Fetch data from external API
+//   const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/feed/post`);
+//   const data = await res.json();
+//   console.log(data);
 
-  // Pass data to the page via props
-  return { props: { data } };
-}
+//   // Pass data to the page via props
+//   return { props: { data } };
+// }

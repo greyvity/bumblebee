@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Search from "../Components/Search";
 import { useAuth } from "../Context/AuthContext";
 import LoginModal from "../Components/Modals/LoginModal";
+import RegisterModal from "../Components/Modals/RegisterModal";
 
 const links = [
   { to: "", name: "Login", label: "login" },
@@ -12,7 +13,8 @@ const links = [
 ];
 
 const Nav = () => {
-  const { loginVisible, setLoginVisible } = useAuth();
+  const { loginVisible, setLoginVisible, setRegisterVisible, registerVisible } =
+    useAuth();
 
   return (
     <>
@@ -60,7 +62,12 @@ const Nav = () => {
                     label={link.label}
                     onClick={() => {
                       // setActive(link.to);
+                      console.log("hi");
                       if (link.label === "login") setLoginVisible(true);
+                      else if (link.label === "signup") {
+                        console.log("bye");
+                        setRegisterVisible(true);
+                      }
                     }}
                   />
                 ))}
@@ -69,9 +76,16 @@ const Nav = () => {
           </header>
         </div>
       </AnimateSharedLayout>
-      {/* {loginVisible && ( */}
-      <LoginModal visible={loginVisible} setVisible={setLoginVisible} />
-      {/* )} */}
+      <RegisterModal
+        visible={registerVisible}
+        setVisible={setRegisterVisible}
+        setLoginVisible={setLoginVisible}
+      />
+      <LoginModal
+        setRegisterVisible={setRegisterVisible}
+        visible={loginVisible}
+        setVisible={setLoginVisible}
+      />
     </>
   );
 };

@@ -1,8 +1,11 @@
 import styles from "../../styles/Mayknow.module.scss";
 import { motion } from "framer-motion";
 import Item from "./Item";
+import { useData } from "../../Context/DataContext";
 
 const MayKnow = () => {
+  const { suggestions } = useData();
+
   return (
     <motion.div
       initial={{ y: 500, opacity: 0 }}
@@ -20,8 +23,17 @@ const MayKnow = () => {
       <div className={styles.container}>
         <h1 className={styles.title}> {knowIcon} People Your May Know </h1>
         <motion.div className={styles.itemContainer}>
-          {suggestions.map((item) => (
-            <Item key={item.id} item={item} />
+          {suggestions?.map((item) => (
+            <Item key={item.userid} item={item} />
+          ))}
+          {suggestions?.map((item) => (
+            <Item key={item.userid} item={item} />
+          ))}
+          {suggestions?.map((item) => (
+            <Item key={item.userid} item={item} />
+          ))}
+          {suggestions?.map((item) => (
+            <Item key={item.userid} item={item} />
           ))}
         </motion.div>
       </div>
@@ -30,24 +42,6 @@ const MayKnow = () => {
 };
 
 export default MayKnow;
-
-const suggestions = [
-  {
-    id: 1,
-    user: "Image Adhikari",
-    avatar: 0,
-  },
-  {
-    id: 2,
-    user: "Sajag Silwal",
-    avatar: 0,
-  },
-  {
-    id: 3,
-    user: "Sambeg Shrestha",
-    avatar: 1,
-  },
-];
 
 const knowIcon = (
   <svg

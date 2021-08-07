@@ -1,34 +1,29 @@
 import { motion, AnimatePresence, AnimateSharedLayout } from "framer-motion";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { useForm } from "react-hook-form";
-import { useAuth } from "../../Context/AuthContext";
-import { useData } from "../../Context/DataContext";
 import styles from "../../styles/Modals/Modal.module.scss";
 import Error from "../Utils/Error";
 import Notification from "../Utils/Notification";
+import ButtonLoader from "../Utils/ButtonLoader";
 
 const backdrop = {
+  visible: { opacity: 1 },
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.3, ease: [0.66, -0.47, 0.5, 1.52] },
-  },
   exit: { opacity: 0 },
 };
 
 const modal = {
   hidden: { y: -500, opacity: 0 },
   visible: {
-    y: 80,
+    y: 100,
     opacity: 1,
     transition: { delay: 0.3, duration: 0.5 },
   },
   exit: { y: -500 },
 };
 
-const EditProfileModal = () => {
-  const { editModal, setEditModal } = useAuth();
-  const { fetchProfile, updateProfile, profile } = useData();
+const RegisterModal = ({ visible, setVisible, setLoginVisible }) => {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
 
@@ -42,6 +37,8 @@ const EditProfileModal = () => {
     clearErrors,
   } = useForm();
 
+  const watchUser = watch("username");
+
   useEffect(() => {
     return () => {
       setNotification(null);
@@ -50,13 +47,55 @@ const EditProfileModal = () => {
 
   async function onSubmitForm(values) {
     setLoading(true);
-    await updateProfile();
-    setLoading(false);
+    clearErrors();
+    let url = `${process.env.NEXT_PUBLIC_URL}/api/auth/register/`;
+    let config = {
+      // url: `${process.env.NEXT_PUBLIC_URL}/api/auth/register`,
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+      redirect: "follow",
+    };
+
+    console.log(values);
+
+    try {
+      console.log("hello");
+      const response = await fetch(url, config);
+      console.log(response);
+      const jsonResponse = await response.json();
+      console.log(jsonResponse);
+      if (jsonResponse.error) {
+        throw { detail: jsonResponse.error.detail };
+      }
+      // if (jsonResponse.detail) {
+      //   throw { detail: jsonResponse.detail };
+      // }
+      if (jsonResponse.success) {
+        console.log("hi");
+        setNotification(
+          `Account Created!! Check ${values.email} for verification`
+        );
+        reset();
+      }
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      if (err.detail) {
+        setError("manual", {
+          type: "manual",
+          message: err.detail,
+        });
+        setTimeout(() => clearErrors("manual"), 3000);
+      }
+    }
   }
 
   return (
     <AnimatePresence>
-      {editModal && (
+      {visible && (
         <motion.div
           className={styles.backdrop}
           variants={backdrop}
@@ -67,25 +106,23 @@ const EditProfileModal = () => {
           // animate={{ opacity: 1 }}
           // exit={{}}
         >
-          <motion.div layout className={styles.modal} variants={modal}>
-            <motion.h1 className={styles["modal-heading"]}>
-              Edit Profile
-            </motion.h1>
+          <motion.div className={styles.modal} variants={modal}>
+            <h1 className={styles["modal-heading"]}>Register</h1>
             <Error
               visible={errors?.manual?.message}
               message={errors?.manual?.message}
               styles={styles}
+              clear={() => clearErrors("manual")}
             />
             <Notification
+              visible={notification}
               message={notification}
               styles={styles}
-              clear={() => setNotification(null)}
-              setNotification={setNotification}
             />
-
-            <motion.div className={styles.chooseAvatar}></motion.div>
-
-            <motion.form onSubmit={handleSubmit(onSubmitForm)}>
+            <motion.form
+              autoComplete="off"
+              onSubmit={handleSubmit(onSubmitForm)}
+            >
               <motion.div className={styles.formGroup}>
                 <label htmlFor="email">Email</label>
                 <input
@@ -113,6 +150,7 @@ const EditProfileModal = () => {
                   placeholder="Enter your email"
                 />
                 <span className={styles.error}>{errors?.email?.message}</span>
+                {/* {email} */}
               </motion.div>
               <motion.div className={styles.formGroup}>
                 <label htmlFor="username">Username</label>
@@ -131,25 +169,9 @@ const EditProfileModal = () => {
                 <span className={styles.error}>
                   {errors?.username?.message}
                 </span>
+                {/* {email} */}
               </motion.div>
-              <motion.div className={styles.formGroup}>
-                <label htmlFor="bio">Bio</label>
-                <input
-                  id="bio"
-                  name="bio"
-                  type="text"
-                  {...register("bio", {
-                    required: {
-                      value: false,
-                      message: "You must enter your bio",
-                    },
-                  })}
-                  placeholder="Enter your bio"
-                />
-                <span className={styles.error}>
-                  {errors?.username?.message}
-                </span>
-              </motion.div>
+
               <motion.div className={styles.formGroup}>
                 <label htmlFor="pass">Password</label>
                 <input
@@ -162,37 +184,28 @@ const EditProfileModal = () => {
                       message: "You must enter your password",
                     },
                   })}
-                  placeholder={`Enter password`}
+                  placeholder={`Enter ${
+                    watchUser ? `password for ${watchUser}` : "your password"
+                  }`}
                 />
                 <span className={styles.error}>
                   {errors?.password?.message}
                 </span>
               </motion.div>
+              <motion.div
+                className={styles.instead}
+                onClick={() => {
+                  setVisible(false);
+                  setLoginVisible(true);
+                }}
+              >
+                <span> Already have an account? Login Instead! </span>
+              </motion.div>
               <motion.div className={styles.submit}>
-                <AnimateSharedLayout>
-                  <motion.button
-                    // layout
-                    whileHover={{
-                      filter: "contrast(0.9)",
-                      boxShadow: "0 0 10px 2px rgba(0,0,0,0.2)",
-                      transition: {
-                        duration: 0.5,
-                      },
-                    }}
-                    type="submit"
-                    whileTap={{
-                      y: 5,
-                    }}
-                  >
-                    {loading && (
-                      <span className={styles.loading}>{loader}</span>
-                    )}
-                    <span className={styles.button}>Edit Profile</span>
-                  </motion.button>
-                </AnimateSharedLayout>
+                <ButtonLoader value="Sign Up" loading={loading} />
               </motion.div>
             </motion.form>
-            <span className={styles.cancel} onClick={() => setEditModal(false)}>
+            <span className={styles.cancel} onClick={() => setVisible(false)}>
               {cancel}
             </span>
           </motion.div>
@@ -202,78 +215,7 @@ const EditProfileModal = () => {
   );
 };
 
-export default EditProfileModal;
-
-const loaderVariants = {
-  visible: (loading) => ({
-    opacity: 1,
-    x: 15,
-    y: 2,
-    scale: 4,
-  }),
-  hidden: (loading) => ({
-    opacity: 0,
-    scale: 0,
-    x: 15,
-    y: 2,
-  }),
-  exit: { opacity: 0 },
-};
-
-const childVariants = {
-  visible: ({ value }) => ({
-    y: -value,
-    transition: {
-      duration: 1,
-      repeatType: "reverse",
-      repeat: Infinity,
-      ease: [0.66, -0.47, 0.5, 1.52],
-    },
-  }),
-  hidden: (loading) => ({
-    y: 0,
-  }),
-  exit: { opacity: 0 },
-};
-
-const loader = (
-  <motion.svg
-    variants={loaderVariants}
-    initial="hidden"
-    animate="visible"
-    exit="exit"
-    width="30"
-    height="11"
-    viewBox="0 0 100 11"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 5 }}
-      cx="2.65137"
-      cy="8.79981"
-      r="2.54443"
-      fill="white"
-    />
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 10 }}
-      cx="25.7974"
-      cy="8.79981"
-      r="2.54443"
-      fill="white"
-    />
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 5 }}
-      cx="14.2247"
-      cy="5.6668"
-      r="5.11382"
-      fill="white"
-    />
-  </motion.svg>
-);
+export default RegisterModal;
 
 const cancel = (
   <svg
@@ -289,3 +231,14 @@ const cancel = (
     />
   </svg>
 );
+
+<svg
+  width="29"
+  height="12"
+  viewBox="0 0 29 12"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <circle cx="2.65137" cy="8.79981" r="2.54443" fill="white" />
+  <circle cx="25.7974" cy="8.79981" r="2.54443" fill="white" />
+</svg>;

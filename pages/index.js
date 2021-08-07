@@ -3,8 +3,17 @@ import styles from "../styles/Landing.module.scss";
 import { motion } from "framer-motion";
 import Nav from "../Layout/Nav";
 import Button from "../Components/Utils/Button";
+import router from "next/router";
+import { useAuth } from "../Context/AuthContext";
+import { useEffect } from "react";
 
 export default function Landing() {
+  const { isLoggedIn } = useAuth();
+
+  useEffect(() => {
+    if (isLoggedIn) router.push("/home");
+  }, [isLoggedIn]);
+
   return (
     <>
       <Head>

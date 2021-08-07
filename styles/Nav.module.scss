@@ -18,11 +18,25 @@
 
         .item {
           list-style-type: none;
+          cursor: pointer;
+
+          .login {
+            transition: all 0.2s ease-in-out;
+
+            &:hover {
+              color: rgb(61, 61, 61);
+            }
+          }
 
           .signup {
             border: 5px solid #49574e;
             border-radius: 50px;
             padding: 10px 36px;
+            transition: all 0.2s ease-in-out;
+
+            &:hover {
+              background: rgba(179, 179, 179, 0.52);
+            }
           }
 
           h1 {

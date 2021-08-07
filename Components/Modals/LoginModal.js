@@ -1,11 +1,18 @@
 import { motion, AnimatePresence, AnimateSharedLayout } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import styles from "../../styles/Modals/Modal.module.scss";
+import Notification from "../Utils/Notification";
+import Error from "../Utils/Error";
+import { useAuth } from "../../Context/AuthContext";
+import ButtonLoader from "../Utils/ButtonLoader";
 
 const backdrop = {
-  visible: { opacity: 1 },
   hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.3, ease: [0.66, -0.47, 0.5, 1.52] },
+  },
   exit: { opacity: 0 },
 };
 
@@ -19,32 +26,70 @@ const modal = {
   exit: { y: -500 },
 };
 
-const LoginModal = ({ visible = true, setVisible }) => {
+const LoginModal = ({ visible, setVisible, setRegisterVisible }) => {
   const [loading, setLoading] = useState(false);
-  const { register, handleSubmit, errors, reset, watch } = useForm();
+  const [notification, setNotification] = useState(null);
 
-  const watchEmail = watch("email");
+  const { setIsLoggedIn, setCurrentUser } = useAuth();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setError,
+    clearErrors,
+  } = useForm();
+
+  useEffect(() => {
+    return () => {
+      setNotification(null);
+    };
+  }, []);
+
+  const watchUser = watch("username");
 
   async function onSubmitForm(values) {
     setLoading(true);
     let url = `${process.env.NEXT_PUBLIC_URL}/api/auth/login`;
     let config = {
+      // url: `${process.env.NEXT_PUBLIC_URL}/api/auth/login`,
       method: "post",
       headers: {
         "Content-Type": "application/json",
       },
-      data: values,
+      body: JSON.stringify(values),
     };
 
     try {
       const response = await fetch(url, config);
       console.log(response);
-      if (response.status == 200) {
-        reset();
+      const jsonResponse = await response.json();
+      console.log(jsonResponse);
+      if (jsonResponse.error) {
+        throw { detail: jsonResponse.error.detail };
+      }
+      // if (jsonResponse.detail) {
+      //   throw { detail: jsonResponse.detail };
+      // }
+      if (jsonResponse.access) {
+        localStorage.setItem("authToken", jsonResponse.access);
+        localStorage.setItem("user", JSON.stringify(jsonResponse));
+        setCurrentUser(jsonResponse);
+        setIsLoggedIn(true);
       }
       setLoading(false);
     } catch (err) {
       setLoading(false);
+      if (err.detail) {
+        setError("manual", {
+          type: "manual",
+          message: err.detail,
+        });
+
+        setTimeout(() => clearErrors("manual"), 3000);
+      }
     }
   }
 
@@ -61,17 +106,23 @@ const LoginModal = ({ visible = true, setVisible }) => {
           // animate={{ opacity: 1 }}
           // exit={{}}
         >
-          <motion.div className={styles.modal} variants={modal}>
-            <h1 className={styles["modal-heading"]}>Login</h1>
-
-            <motion.form
-              autoComplete="off"
-              onSubmit={handleSubmit(onSubmitForm)}
-            >
-              <div className={styles.formGroup}>
+          <motion.div layout className={styles.modal} variants={modal}>
+            <motion.h1 className={styles["modal-heading"]}>Login</motion.h1>
+            <Error
+              visible={errors?.manual?.message}
+              message={errors?.manual?.message}
+              styles={styles}
+            />
+            <Notification
+              message={notification}
+              styles={styles}
+              clear={() => setNotification(null)}
+              setNotification={setNotification}
+            />
+            <motion.form onSubmit={handleSubmit(onSubmitForm)}>
+              <motion.div className={styles.formGroup}>
                 <label htmlFor="username">Username</label>
                 <input
-                  onChange={(e) => console.log("e.target.value")}
                   id="username"
                   name="username"
                   type="text"
@@ -83,10 +134,12 @@ const LoginModal = ({ visible = true, setVisible }) => {
                   })}
                   placeholder="Enter your username"
                 />
-                <span>{errors?.email?.message}</span>
+                <span className={styles.error}>
+                  {errors?.username?.message}
+                </span>
                 {/* {email} */}
-              </div>
-              <div className={styles.formGroup}>
+              </motion.div>
+              <motion.div className={styles.formGroup}>
                 <label htmlFor="pass">Password</label>
                 <input
                   type="password"
@@ -99,34 +152,25 @@ const LoginModal = ({ visible = true, setVisible }) => {
                     },
                   })}
                   placeholder={`Enter ${
-                    watchEmail ? `password for ${watchEmail}` : "your password"
+                    watchUser ? `password for ${watchUser}` : "your password"
                   }`}
                 />
-                <span>{errors?.name?.message}</span>
-              </div>
-              <div className={styles.submit}>
-                <AnimateSharedLayout>
-                  <motion.button
-                    layout
-                    whileHover={{
-                      filter: "contrast(0.9)",
-                      boxShadow: "0 0 10px 2px rgba(0,0,0,0.2)",
-                      transition: {
-                        duration: 0.5,
-                      },
-                    }}
-                    type="submit"
-                    whileTap={{
-                      y: 5,
-                    }}
-                  >
-                    {loading && (
-                      <span className={styles.loading}>{loader}</span>
-                    )}
-                    <span className={styles.button}>Login</span>
-                  </motion.button>
-                </AnimateSharedLayout>
-              </div>
+                <span className={styles.error}>
+                  {errors?.password?.message}
+                </span>
+              </motion.div>
+              <motion.div
+                className={styles.instead}
+                onClick={() => {
+                  setVisible(false);
+                  setRegisterVisible(true);
+                }}
+              >
+                <span> Don't have an account Yet? Sign Up Instead! </span>
+              </motion.div>
+              <motion.div className={styles.submit}>
+                <ButtonLoader value="Login" loading={loading} />
+              </motion.div>
             </motion.form>
             <span className={styles.cancel} onClick={() => setVisible(false)}>
               {cancel}
@@ -139,77 +183,6 @@ const LoginModal = ({ visible = true, setVisible }) => {
 };
 
 export default LoginModal;
-
-const loaderVariants = {
-  visible: (loading) => ({
-    opacity: 1,
-    x: 15,
-    y: 2,
-    scale: 4,
-  }),
-  hidden: (loading) => ({
-    opacity: 0,
-    scale: 0,
-    x: 15,
-    y: 2,
-  }),
-  exit: { opacity: 0 },
-};
-
-const childVariants = {
-  visible: ({ value }) => ({
-    y: -value,
-    transition: {
-      duration: 1,
-      repeatType: "reverse",
-      repeat: Infinity,
-      ease: [0.66, -0.47, 0.5, 1.52],
-    },
-  }),
-  hidden: (loading) => ({
-    y: 0,
-  }),
-  exit: { opacity: 0 },
-};
-
-const loader = (
-  <motion.svg
-    variants={loaderVariants}
-    initial="hidden"
-    animate="visible"
-    exit="exit"
-    width="30"
-    height="11"
-    viewBox="0 0 100 11"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 5 }}
-      cx="2.65137"
-      cy="8.79981"
-      r="2.54443"
-      fill="white"
-    />
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 10 }}
-      cx="25.7974"
-      cy="8.79981"
-      r="2.54443"
-      fill="white"
-    />
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 5 }}
-      cx="14.2247"
-      cy="5.6668"
-      r="5.11382"
-      fill="white"
-    />
-  </motion.svg>
-);
 
 const cancel = (
   <svg
@@ -225,14 +198,3 @@ const cancel = (
     />
   </svg>
 );
-
-<svg
-  width="29"
-  height="12"
-  viewBox="0 0 29 12"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <circle cx="2.65137" cy="8.79981" r="2.54443" fill="white" />
-  <circle cx="25.7974" cy="8.79981" r="2.54443" fill="white" />
-</svg>;

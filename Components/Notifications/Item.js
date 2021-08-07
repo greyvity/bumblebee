@@ -1,8 +1,10 @@
 import Avatar from "../Utils/Avatar";
 import styles from "../../styles/Notifications.module.scss";
 import { motion } from "framer-motion";
+import router from "next/router";
 
 export default function Item({ item }) {
+  console.log(item);
   return (
     <motion.div className={styles.item}>
       <Avatar
@@ -18,10 +20,11 @@ export default function Item({ item }) {
         <strong
           onClick={(e) => {
             e.stopPropagation();
-            console.log("hello");
+            router.push(`/profile/${item.agent_username}`);
           }}
+          className="pointer"
         >
-          {item.user}
+          {item.agent_username}
         </strong>{" "}
         has commented on your photo.
       </p>

@@ -4,10 +4,11 @@ import MayKnow from "../Components/Suggestions/MayKnow";
 import Notifications from "../Components/Notifications/Notifications";
 // import OnYourMind from "../Components/OnYourMind";
 import Search from "../Components/Search";
-import { DataProvider } from "../Context/DataContext";
+import { AssetsProvider } from "../Context/AssetsContext";
 import Sidebar from "../Layout/Sidebar";
 import "../styles/globals.css";
 import { AuthProvider } from "../Context/AuthContext";
+import { DataProvider } from "../Context/DataContext";
 
 function MyApp({ Component, pageProps, router }) {
   const [show, setShow] = useState(true);
@@ -15,7 +16,7 @@ function MyApp({ Component, pageProps, router }) {
   useEffect(() => {
     const handleStart = (url) => {
       console.log(`Loading: ${url}`);
-      if (url === "/home") setShow(true);
+      if (url === "/home" || url.split("/")[1] === "profile") setShow(true);
       else {
         setShow(false);
       }
@@ -24,7 +25,6 @@ function MyApp({ Component, pageProps, router }) {
       // NProgress.done();
       console.log("stopped");
     };
-    console.log(router);
     handleStart(router.route);
 
     console.log("hi");
@@ -43,36 +43,40 @@ function MyApp({ Component, pageProps, router }) {
   return (
     <AuthProvider>
       <DataProvider>
-        <AnimateSharedLayout type="crossfade">
-          <motion.div
-            variants={{
-              initial: { opacity: 0 },
-              animate: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 5,
+        <AssetsProvider>
+          <AnimateSharedLayout type="crossfade">
+            <motion.div
+              variants={{
+                initial: { opacity: 0 },
+                animate: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 5,
+                  },
                 },
-              },
-            }}
-            initial="initial"
-            animate="animate"
-            layout
-            className="main"
-          >
-            {/* <OnYourMind /> */}
-            <Component {...pageProps} key={router.route} />
-            <AnimatePresence>
-              {show && (
-                <>
-                  <Sidebar />
-                  <Search />
-                  <Notifications />
-                  <MayKnow />
-                </>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </AnimateSharedLayout>
+              }}
+              initial="initial"
+              animate="animate"
+              layout
+              style={{}}
+            >
+              <div className="main">
+                {/* <OnYourMind /> */}
+                <Component {...pageProps} key={router.route} />
+                <AnimatePresence>
+                  {show && (
+                    <>
+                      <Sidebar />
+                      <Search />
+                      <Notifications />
+                      <MayKnow />
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </AnimateSharedLayout>
+        </AssetsProvider>
       </DataProvider>
     </AuthProvider>
   );

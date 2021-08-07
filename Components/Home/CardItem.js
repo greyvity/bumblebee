@@ -29,28 +29,30 @@ const CardItem = ({ post }) => {
     <div className={styles.card}>
       <div className={styles.profileContainer}>
         {/* <div className={styles.profile}>{avatars[0]}</div> */}
-        <Avatar value={0} style={{ margin: "auto" }} />
+        <Avatar value={post.author.persona} style={{ margin: "auto" }} />
       </div>
       <div className={styles.postContainer}>
-        <h3 className={styles.username}> {post.name} </h3>
+        <h3 className={styles.username}> {post.author.username} </h3>
         <div className={styles.content}>
-          {post.post && <p className={styles.postDesc}>{post.post}</p>}
-          {post.image && (
+          {post.content && <p className={styles.postDesc}>{post.content}</p>}
+          {post?.images?.length !== 0 && (
             <motion.div
               className={styles.imgContainer}
-              layoutId={"post"}
-              animate={{ x: 0 }}
+              layoutId={post.images[0].image}
+              // animate={{ x: 0 }}
               transition={{
-                // ease: [0.6, 0.01, -0.05, 0.95],
+                ease: [0.6, 0.01, -0.05, 0.95],
                 duration: 0.4,
                 delay: 0.1,
               }}
-              onClick={() => router.push("/post/1")}
+              onClick={() => router.push(`/buzz/${post.buzzid}`)}
             >
               <Image
                 layout="fill"
                 objectFit="cover"
-                src={post.image}
+                loading="eager"
+                priority={true}
+                src={`${process.env.NEXT_PUBLIC_URL}${post.images[0].image}`}
                 className={styles.image}
               />
             </motion.div>

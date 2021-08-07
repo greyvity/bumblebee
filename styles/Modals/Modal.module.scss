@@ -38,6 +38,11 @@
       flex-direction: column;
       align-items: flex-start;
 
+      .error {
+        color: red;
+        margin-top: 8px;
+      }
+
       label {
         font-family: Montserrat;
         font-weight: 500;
@@ -60,25 +65,6 @@
         font-size: 23.41px;
       }
     }
-
-    .submit {
-      button {
-        background: #f45b49;
-        border-radius: 7px;
-        padding: 14px 61px;
-        border: none;
-        margin-top: 10px;
-        cursor: pointer;
-
-        .button {
-          font-family: Montserrat;
-          font-weight: 500;
-          font-size: 18.9053px;
-          color: #ffffff;
-          text-transform: uppercase;
-        }
-      }
-    }
   }
 }
 
@@ -91,4 +77,71 @@
   position: absolute;
   top: 30px;
   right: 50px;
+}
+
+.message {
+  width: 100%;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+
+  padding: 12px 20px;
+  border-radius: 5px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+
+  span {
+    font-weight: 500;
+    font-size: 20px;
+  }
+}
+
+.successMessage {
+  background-color: rgba(144, 238, 144, 0.329);
+  border: 3px solid rgb(29, 235, 1);
+  span {
+    color: green;
+  }
+}
+
+.errorMessage {
+  background-color: rgba(243, 145, 145, 0.377);
+  border: 3px solid rgb(255, 88, 88);
+  span {
+    color: rgb(128, 0, 0);
+  }
+}
+
+.instead {
+  cursor: pointer;
+  font-family: "Montserrat";
+  text-align: left;
+  width: 100%;
+  margin-top: -20px;
+  font-weight: 500;
+
+  span {
+    // text-decoration: underline;
+    color: #444;
+    border-bottom: 1px solid #444;
+  }
+}
+
+.submit {
+  button {
+    background: #f45b49;
+    border-radius: 7px;
+    padding: 14px 61px;
+    border: none;
+    margin-top: 10px;
+    cursor: pointer;
+
+    .button {
+      font-family: Montserrat;
+      font-weight: 500;
+      font-size: 18.9053px;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+  }
 }

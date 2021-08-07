@@ -1,11 +1,11 @@
 import styles from "../styles/Search.module.scss";
 import { useForm } from "react-hook-form";
-import { useData } from "../Context/DataContext";
+import { useAssets } from "../Context/AssetsContext";
 import { motion } from "framer-motion";
 
 const Search = () => {
   const { register, handleSubmit, errors, reset } = useForm();
-  const { avatars } = useData();
+  const { avatars } = useAssets();
   const onSubmit = (values) => {
     console.log(values);
   };

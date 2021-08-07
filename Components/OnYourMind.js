@@ -1,12 +1,14 @@
 import styles from "../styles/Mind.module.scss";
 import { useForm } from "react-hook-form";
-import { useData } from "../Context/DataContext";
+import { useAssets } from "../Context/AssetsContext";
 import Avatar from "./Utils/Avatar";
 import { motion } from "framer-motion";
+import { useData } from "../Context/DataContext";
 
 const OnYourMind = () => {
   const { register, handleSubmit, errors, reset } = useForm();
-  const { avatars } = useData();
+  const { profile } = useData();
+  const { avatars } = useAssets();
   const onSubmit = (values) => {
     console.log(values);
   };
@@ -29,7 +31,7 @@ const OnYourMind = () => {
         <h1 className={styles.title}>What's on your mind?</h1>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Avatar
-            value={0}
+            value={profile?.persona}
             style={{ position: "absolute", top: "32px", left: "35px" }}
           />
           <div className={`${styles.formGroup} ${styles.postBuzz}`}>

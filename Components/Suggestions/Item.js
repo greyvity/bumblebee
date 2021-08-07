@@ -6,14 +6,14 @@ export default function Item({ item }) {
   return (
     <motion.div className={styles.item}>
       <Avatar
-        value={item.avatar || 0}
+        value={item.persona || 0}
         style={{
           width: "50px",
           height: "50px",
           border: "2px solid black",
         }}
       />
-      <h4>{item.user}</h4>
+      <h4>{item.username}</h4>
       <span className={styles.time}>{add}</span>
     </motion.div>
   );

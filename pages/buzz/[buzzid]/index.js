@@ -4,9 +4,16 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { MenuItem } from "../../../Components/MenuItem";
 import Avatar from "../../../Components/Utils/Avatar";
+import ErrorPage from "next/error";
+import Comment from "../../../Components/Comments/Comment";
 
-const Post = ({ post = {} }) => {
+const Post = ({ buzz, comments }) => {
   const router = useRouter();
+  const { buzzid } = router.query;
+
+  // useEffect(() => {
+  //   getBuzzDetails;
+  // }, [input]);
 
   const variants = {
     closed: {
@@ -26,20 +33,26 @@ const Post = ({ post = {} }) => {
       id: 1,
       icon: like,
       label: "upvotes",
-      count: post.upvotes,
+      count: buzz?.interaction?.upvoted_count,
       classes: "likes",
     },
     {
       id: 2,
       icon: comment,
       label: "comments",
-      count: post.numComments,
+      count: buzz?.interaction?.commented_count,
       classes: "comments",
     },
-    { id: 3, icon: buzz, label: "buzz", count: post.rebuzz, classes: "rebuzz" },
+    {
+      id: 3,
+      icon: rebuzzz,
+      label: "buzz",
+      count: buzz?.interaction?.rebuzzed_count,
+      classes: "rebuzz",
+    },
   ];
 
-  return (
+  return buzz ? (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -67,25 +80,27 @@ const Post = ({ post = {} }) => {
       </motion.div>
 
       <div className={styles.bottom}>
-        <motion.div
-          layoutId={"post"}
-          transition={{
-            // ease: [0.6, 0.01, -0.05, 0.95],
-            duration: 0.4,
-            delay: 0.1,
-          }}
-          className={styles.postImage}
-        >
-          <Image
-            layout="fill"
-            priority={true}
-            objectFit="contain"
-            className={styles.image}
-            src={"/temp.png"}
-            // placeholder="blur"
-            loading="eager"
-          />
-        </motion.div>
+        {buzz?.images?.length !== 0 && (
+          <motion.div
+            layoutId={buzz.images[0].image}
+            transition={{
+              ease: [0.6, 0.01, -0.05, 0.95],
+              duration: 0.4,
+              delay: 0.1,
+            }}
+            className={styles.postImage}
+          >
+            <Image
+              layout="fill"
+              priority={true}
+              objectFit="contain"
+              className={styles.image}
+              src={`${process.env.NEXT_PUBLIC_URL}${buzz.images[0].image}`}
+              // placeholder="blur"
+              loading="eager"
+            />
+          </motion.div>
+        )}
         <motion.div
           initial={{ x: 500, opacity: 0 }}
           animate={{
@@ -100,18 +115,25 @@ const Post = ({ post = {} }) => {
           className={styles.postDetails}
         >
           <div className={styles.userInfo}>
-            <Avatar value={0} style={{ marginRight: "20px" }} />
+            <Avatar
+              value={buzz.author.persona}
+              style={{ marginRight: "20px" }}
+            />
 
-            <h3 className={styles.username}> {post.name || "John Doe"} </h3>
+            <h3 className={styles.username}>
+              {" "}
+              {buzz.author.username || "John Doe"}{" "}
+            </h3>
 
             <span className={styles.save}> {save} </span>
           </div>
           <p className={styles.postDesc}>
-            {post.post ||
+            {buzz.content ||
               "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem dictum sit arcu id ac. Duis cras varius nisi, id porttitor. "}
           </p>
+          {console.log(interactions)}
           <div className={styles.postInfo}>
-            {interactions.map(({ id, classes, icon, likes, label }) => (
+            {interactions.map(({ id, classes, icon, count, label }) => (
               <motion.span
                 style={{ cursor: "pointer" }}
                 whileHover={{ scale: 1.05 }}
@@ -119,11 +141,12 @@ const Post = ({ post = {} }) => {
                 className={styles[classes]}
               >
                 {icon}
-                {likes} {label}
+                {count} {label}
               </motion.span>
             ))}
           </div>
           <div className={styles.divider}></div>
+          <h1 className={styles.header}>Comments</h1>
           <div className={styles.ul}>
             <motion.ul
               initial="closed"
@@ -131,8 +154,8 @@ const Post = ({ post = {} }) => {
               className={styles.ul}
               variants={variants}
             >
-              {[0, 1, 2, 3, 4].map((i) => (
-                <MenuItem i={i} key={i} />
+              {comments?.map((comment, i) => (
+                <Comment i={i} key={comment.commentid} item={comment} />
               ))}
             </motion.ul>
           </div>
@@ -142,10 +165,44 @@ const Post = ({ post = {} }) => {
       {/* </a>
       </Link> */}
     </motion.div>
+  ) : (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className={styles.container}
+      layout
+    >
+      <ErrorPage statusCode={404} />
+    </motion.div>
   );
 };
 
 export default Post;
+
+export async function getServerSideProps({ params }) {
+  // params contains the buzz `id`.
+  // If the route is like /posts/1, then params.id is 1
+  console.log("hi");
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_URL}/api/content/buzz/id=${params.buzzid}/detail`
+    );
+    const buzz = await res.json();
+    if (buzz.error) throw buzz.error;
+    const info = await fetch(
+      `${process.env.NEXT_PUBLIC_URL}/api/comment/buzz/id=${params.buzzid}/list`
+    );
+    const comments = await info.json();
+    console.log(comments);
+    return { props: { buzz, comments } };
+  } catch (error) {
+    console.log(error);
+    return { props: {} };
+  }
+
+  // Pass buzz data to the page via props
+}
 
 const like = (
   <svg
@@ -178,7 +235,7 @@ const comment = (
   </svg>
 );
 
-const buzz = (
+const rebuzzz = (
   <svg
     width="22"
     height="21"
