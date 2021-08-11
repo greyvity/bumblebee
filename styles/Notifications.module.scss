@@ -1,3 +1,5 @@
+@import "mixins";
+
 .wrapper {
   width: 90%;
   height: 90%;
@@ -5,7 +7,9 @@
   align-self: center;
   border: 5.11831px solid #626262;
   border-radius: 12.284px;
-  padding: 35px;
+  // padding: 35px;
+  padding-left: 0;
+  padding-right: 0;
   padding-top: 25px;
   padding-bottom: 0;
   overflow: hidden;
@@ -15,11 +19,7 @@
     display: flex;
     flex-direction: column;
     // justify-content: space-between;
-    overflow: auto;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
+    width: 100%;
   }
 }
 
@@ -29,6 +29,8 @@
   font-family: Montserrat;
   font-size: 20px;
   margin-top: 5px;
+  padding-right: 35px;
+  padding-left: 35px;
 
   svg {
     cursor: unset;
@@ -42,12 +44,15 @@
   display: flex;
   flex-direction: column;
   margin-top: 30px;
-  overflow: auto;
+  overflow-y: auto;
   padding-bottom: 30px;
+  margin-bottom: 20px;
+  overflow-x: hidden;
+  padding-right: 0px;
+  margin-right: 35px;
+  padding-left: 35px;
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  @include scrollbars(8px, #f45b49);
 
   gap: 25px;
 }

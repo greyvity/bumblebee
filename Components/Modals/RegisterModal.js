@@ -59,14 +59,9 @@ const RegisterModal = ({ visible, setVisible, setLoginVisible }) => {
       redirect: "follow",
     };
 
-    console.log(values);
-
     try {
-      console.log("hello");
       const response = await fetch(url, config);
-      console.log(response);
       const jsonResponse = await response.json();
-      console.log(jsonResponse);
       if (jsonResponse.error) {
         throw { detail: jsonResponse.error.detail };
       }
@@ -74,7 +69,6 @@ const RegisterModal = ({ visible, setVisible, setLoginVisible }) => {
       //   throw { detail: jsonResponse.detail };
       // }
       if (jsonResponse.success) {
-        console.log("hi");
         setNotification(
           `Account Created!! Check ${values.email} for verification`
         );

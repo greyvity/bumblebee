@@ -6,10 +6,10 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginVisible, setLoginVisible] = useState(false);
   const [registerVisible, setRegisterVisible] = useState(false);
+  const [forgotPassVisible, setForgotPassVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [editModal, setEditModal] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -36,9 +36,7 @@ export function AuthProvider({ children }) {
           `${process.env.NEXT_PUBLIC_URL}/api/auth/login/refresh`,
           config
         );
-        console.log(res);
         const jsonRes = await res.json();
-        console.log(jsonRes);
       } catch (err) {}
     }
   };
@@ -59,14 +57,12 @@ export function AuthProvider({ children }) {
           `${process.env.NEXT_PUBLIC_URL}/api/auth/logout/`,
           config
         );
-        console.log(res);
         const jsonRes = await res.json();
         if (jsonRes.success) {
           localStorage.clear();
           setIsLoggedIn(false);
           setCurrentUser(null);
         }
-        console.log(jsonRes);
       } catch (err) {}
     }
   };
@@ -102,20 +98,9 @@ export function AuthProvider({ children }) {
     sessionExpired,
     setSessionExpired,
     refreshToken,
+    forgotPassVisible,
+    setForgotPassVisible,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading ? (
-        children
-      ) : (
-        <div
-          className="loading"
-          style={{ height: "100vh", display: "grid", placeItems: "center" }}
-        >
-          Loading
-        </div>
-      )}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

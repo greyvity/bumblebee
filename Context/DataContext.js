@@ -8,6 +8,8 @@ import {
 import ButtonLoader from "../Components/Utils/ButtonLoader";
 import { useAuth } from "./AuthContext";
 import styles from "../styles/Modals/Modal.module.scss";
+import { motion } from "framer-motion";
+import Loader from "../Components/Utils/Loader";
 
 const DataContext = createContext();
 
@@ -22,7 +24,7 @@ export function DataProvider({ children }) {
   const [notifs, setNotifs] = useState(null);
   const [profile, setProfile] = useState(null);
   const [suggestions, setSuggestions] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
+  const [connections, setConnections] = useState(null);
 
   const {
     currentUser,
@@ -73,7 +75,6 @@ export function DataProvider({ children }) {
           config
         );
         const jsonRes = await res.json();
-        console.log(jsonRes);
         if (jsonRes.code === "token_not_valid") return;
         setNotifs((prev) => {
           if (prev !== jsonRes.notifications) return jsonRes?.notifications;
@@ -97,7 +98,6 @@ export function DataProvider({ children }) {
           config
         );
         const jsonRes = await res.json();
-        console.log(jsonRes);
         if (jsonRes.code === "token_not_valid") return;
 
         setSuggestions((prev) => {
@@ -107,10 +107,55 @@ export function DataProvider({ children }) {
     }
   }, [sessionExpired]);
 
+  // getConnections
+  const fetchConnections = useCallback(async () => {
+    if (!sessionExpired) {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          "Content-Type": "application/json",
+        },
+      };
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_URL}/api/connection/user/username=${currentUser?.user_details?.username}/list`,
+          config
+        );
+        const jsonRes = await res.json();
+        if (jsonRes.code === "token_not_valid") return;
+        setConnections(jsonRes);
+      } catch (err) {}
+    }
+  }, [currentUser, sessionExpired]);
+
+  // getUserFeed
+  const fetchUserFeed = useCallback(
+    async (username) => {
+      if (!sessionExpired) {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            "Content-Type": "application/json",
+          },
+        };
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_URL}/api/content/buzz/user=${username}/list`,
+            config
+          );
+          const jsonRes = await res.json();
+          if (jsonRes.code === "token_not_valid") return;
+
+          return jsonRes;
+        } catch (err) {}
+      }
+    },
+    [currentUser, sessionExpired]
+  );
+
   // getProfile
   const fetchProfile = useCallback(
     async (username) => {
-      console.log(username);
       if (!sessionExpired && username) {
         const config = {
           headers: {
@@ -124,11 +169,9 @@ export function DataProvider({ children }) {
             config
           );
           const jsonRes = await res.json();
-          console.log(jsonRes);
           if (jsonRes.code === "token_not_valid") return;
 
           if (username !== currentUser?.user_details?.username) {
-            setUserProfile(jsonRes);
             return jsonRes;
           }
 
@@ -146,7 +189,7 @@ export function DataProvider({ children }) {
   // updateProfile
   const updateProfile = async (values) => {
     const config = {
-      method: "POST",
+      method: "PATCH",
       headers: {
         Authorization: `Bearer ${getToken()}`,
         "Content-Type": "application/json",
@@ -158,51 +201,20 @@ export function DataProvider({ children }) {
         `${process.env.NEXT_PUBLIC_URL}/api/profile/update/user=${currentUser?.user_details?.username}`,
         config
       );
-      console.log(res);
       const jsonRes = await res.json();
-      console.log(jsonRes);
-    } catch (err) {}
-  };
-
-  // usePersona
-  const usePersona = async (values) => {
-    const config = {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    };
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_URL}/api/profile/enable_disable_persona/user=${currentUser?.user_details?.username}`,
-        config
-      );
-      console.log(res);
-      const jsonRes = await res.json();
-      console.log(jsonRes);
+      return jsonRes;
     } catch (err) {}
   };
 
   // Post A buzz
-  const createBuzz = async (values) => {
-    const config = {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    };
+  const createBuzz = async (config) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_URL}/api/content/buzz/create`,
         config
       );
-      console.log(res);
       const jsonRes = await res.json();
-      console.log(jsonRes);
+      return jsonRes;
     } catch (err) {}
   };
 
@@ -221,16 +233,164 @@ export function DataProvider({ children }) {
         `${process.env.NEXT_PUBLIC_URL}/api/content/buzz/id=${values.buzzId}/edit`,
         config
       );
-      console.log(res);
       const jsonRes = await res.json();
-      console.log(jsonRes);
     } catch (err) {}
   };
 
   // Delete A buzz
-  const deleteBuzz = async (values) => {
+  const deleteBuzz = async (buzzid, setFeed) => {
     const config = {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(values),
+    };
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/content/buzz/id=${buzzid}/delete`,
+        config
+      );
+      const jsonRes = await res.json();
+      if (jsonRes.success) {
+        const res = await fetchUserFeed(profile?.username);
+        setFeed(res);
+      }
+    } catch (err) {}
+  };
+
+  // Add Connection
+  const connect = async (username) => {
+    const config = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username }),
+    };
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/connection/user/follow`,
+        config
+      );
+      const jsonRes = await res.json();
+      if (jsonRes.success) {
+        await fetchConnections();
+        const data = await fetchProfile(username);
+        return {
+          status: {
+            success: true,
+            message: `You are now following ${username}`,
+          },
+          data,
+        };
+      }
+    } catch (err) {
+      return {
+        success: false,
+        message: "Something went wrong try again later",
+      };
+    }
+  };
+
+  // Remove Connection
+  const unFollow = async (username) => {
+    const config = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username }),
+    };
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/connection/user/follow`,
+        config
+      );
+      const jsonRes = await res.json();
+      if (jsonRes.success) {
+        await fetchConnections();
+        const data = await fetchProfile(username);
+        return {
+          status: {
+            success: true,
+            message: `You are no longer following ${username}`,
+          },
+          data,
+        };
+      }
+    } catch (err) {
+      return {
+        success: false,
+        message: "Something went wrong try again later",
+      };
+    }
+  };
+
+  // get Buzz Details
+  const getBuzzDetails = async (buzzid, setBuzzDetails) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/content/buzz/id=${buzzid}/detail`
+      );
+      const buzz = await res.json();
+      if (buzz.error) throw buzz.error;
+      if (setBuzzDetails) setBuzzDetails(buzz);
+    } catch (error) {
+      return { props: {} };
+    }
+  };
+
+  // Upvote, downvote
+  const interactPostVote = async (vote, id, setBuzzDetails) => {
+    const config = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/content/buzz/id=${id}/${vote}`,
+        config
+      );
+      const jsonRes = await res.json();
+      if (jsonRes.success) {
+        if (setBuzzDetails) getBuzzDetails(id, setBuzzDetails);
+        return {
+          success: true,
+          isUpvoted: jsonRes.success.message === "Added UPVOTE" ? true : false,
+        };
+      }
+    } catch (err) {
+      return {
+        success: false,
+        message: "Something went wrong try again later",
+      };
+    }
+  };
+
+  // get Comments
+  const getComments = async (buzzid, setComments) => {
+    try {
+      const info = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/comment/buzz/id=${buzzid}/list`
+      );
+      const comments = await info.json();
+      setComments((prev) => {
+        if (prev !== comments) return comments;
+      });
+    } catch (error) {}
+  };
+
+  // comment on buzz
+  const comment = async (values, buzzid, setComments) => {
+    const config = {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${getToken()}`,
         "Content-Type": "application/json",
@@ -239,13 +399,82 @@ export function DataProvider({ children }) {
     };
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_URL}/api/content/buzz/id=${values.buzzId}/delete`,
+        `${process.env.NEXT_PUBLIC_URL}/api/comment/buzz/id=${buzzid}/create`,
         config
       );
-      console.log(res);
       const jsonRes = await res.json();
-      console.log(jsonRes);
-    } catch (err) {}
+      if (jsonRes.success) {
+        getComments(buzzid, setComments);
+        return {
+          success: true,
+          message: "Comment Added",
+        };
+      }
+    } catch (err) {
+      return {
+        success: false,
+        message: "Something went wrong try again later",
+      };
+    }
+  };
+
+  // delete comment on buzz
+  const deleteComment = async (commentid, buzzid, setComments) => {
+    const config = {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/comment/id=${commentid}/delete`,
+        config
+      );
+      const jsonRes = await res.json();
+      if (jsonRes.success) {
+        getComments(buzzid, setComments);
+        return {
+          success: true,
+          message: "Comment Removed",
+        };
+      }
+    } catch (err) {
+      return {
+        success: false,
+        message: "Something went wrong try again later",
+      };
+    }
+  };
+
+  // Search
+  const searchQuery = async (query) => {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/search/list?keyword=${query}`,
+        config
+      );
+      const jsonRes = await res.json();
+      if (jsonRes.users) {
+        return {
+          success: true,
+          message: "Comment Added",
+          data: jsonRes,
+        };
+      } else throw "error";
+    } catch (err) {
+      return {
+        success: false,
+        message: "Something went wrong try again later",
+      };
+    }
   };
 
   const handleLogout = async () => {
@@ -261,31 +490,52 @@ export function DataProvider({ children }) {
       await fetchFeed();
       await fetchNotifs();
       await getFollowSuggestions();
+      await fetchConnections();
       await fetchProfile(currentUser?.user_details?.username);
     }
     if (isLoggedIn) {
       temp();
-      // const loadData = setInterval(temp, 5000);
-      // return () => clearInterval(loadData);
+      const loadData = setInterval(temp, 5000);
+      return () => clearInterval(loadData);
     } else {
       setLoading(false);
     }
-  }, [isLoggedIn]);
+  }, [
+    isLoggedIn,
+    currentUser,
+    fetchFeed,
+    fetchNotifs,
+    getFollowSuggestions,
+    fetchConnections,
+    fetchProfile,
+  ]);
 
   const value = {
     feed,
     setFeed,
     notifs,
     profile,
-    deleteBuzz,
+    createBuzz,
     editBuzz,
-    usePersona,
+    deleteBuzz,
     updateProfile,
     fetchProfile,
     fetchFeed,
     fetchNotifs,
     suggestions,
     setSuggestions,
+    connect,
+    fetchConnections,
+    connections,
+    setConnections,
+    unFollow,
+    fetchUserFeed,
+    interactPostVote,
+    comment,
+    getToken,
+    getComments,
+    searchQuery,
+    deleteComment,
   };
 
   return (
@@ -293,12 +543,7 @@ export function DataProvider({ children }) {
       {!loading ? (
         children
       ) : !sessionExpired ? (
-        <div
-          className="loading"
-          style={{ height: "100vh", display: "grid", placeItems: "center" }}
-        >
-          Loading
-        </div>
+        <Loader showTitle={true} />
       ) : (
         <div
           className="session-expired"
@@ -324,28 +569,3 @@ export function DataProvider({ children }) {
     </DataContext.Provider>
   );
 }
-
-<div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "20px",
-  }}
->
-  <h1 style={{ fontFamily: "Montserrat" }}>
-    Session Expired, Please Logout and Log in again
-  </h1>
-  <button
-    style={{
-      background: "tomato",
-      border: "none",
-      padding: "10px 20px",
-      color: "white",
-      fontFamily: "Montserrat",
-      fontSize: "20px",
-    }}
-  >
-    Logout
-  </button>
-</div>;

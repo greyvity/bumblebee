@@ -1,14 +1,25 @@
+@import "mixins";
+
 .main {
   // height: 80%;
-  width: 100%;
-  height: 100%;
+  width: 95%;
   grid-area: 1 / 2 / span all / 3;
   overflow: auto;
-  justify-self: center;
-  padding-top: 30px;
+  justify-self: flex-start;
+  margin-top: 30px;
+  padding-top: 10px;
   padding-bottom: 0px;
+  margin-bottom: 20px;
+  @include scrollbars(8px, #f45b49);
 }
 
-.main::-webkit-scrollbar {
-  display: none;
+.container {
+  grid-area: 1 / 1 / span all / span all;
+  display: flex;
+  flex-direction: column;
+  padding: 50px 60px;
+  padding-top: 40px;
+  background: transparent;
+  // background: linear-gradient(90deg, #cfd9df 0%, #e2ebf0 100%);
+  gap: 30px;
 }

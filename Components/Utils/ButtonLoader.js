@@ -2,8 +2,52 @@ import React, { useState } from "react";
 import { AnimateSharedLayout, motion } from "framer-motion";
 import modalStyles from "../../styles/Modals/Modal.module.scss";
 
-const ButtonLoader = ({ value, styles = modalStyles, loading, ...rest }) => {
-  console.log(styles);
+const ButtonLoader = ({
+  connected,
+  value,
+  styles = modalStyles,
+  loading,
+  ...rest
+}) => {
+  const loader = (
+    <motion.svg
+      variants={loaderVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      width="30"
+      height="11"
+      viewBox="0 0 100 11"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <motion.circle
+        variants={childVariants}
+        custom={{ value: 5, connected }}
+        cx="2.65137"
+        cy="8.79981"
+        r="2.54443"
+        fill="white"
+      />
+      <motion.circle
+        variants={childVariants}
+        custom={{ value: 10, connected }}
+        cx="25.7974"
+        cy="8.79981"
+        r="2.54443"
+        fill="white"
+      />
+      <motion.circle
+        variants={childVariants}
+        custom={{ value: 5, connected }}
+        cx="14.2247"
+        cy="5.6668"
+        r="5.11382"
+        fill="white"
+      />
+    </motion.svg>
+  );
+
   return (
     <AnimateSharedLayout>
       <motion.button
@@ -21,8 +65,17 @@ const ButtonLoader = ({ value, styles = modalStyles, loading, ...rest }) => {
           y: 5,
         }}
       >
-        {loading && <span className={styles.loading}>{loader}</span>}
-        <span className={styles.button}>{value}</span>
+        {loading && (
+          <motion.span className={styles.loading}>{loader}</motion.span>
+        )}
+        <motion.span
+          animate={{
+            color: connected ? "#f45b49" : "#ffffff",
+          }}
+          className={styles.button}
+        >
+          {value}
+        </motion.span>
       </motion.button>
     </AnimateSharedLayout>
   );
@@ -47,9 +100,9 @@ const loaderVariants = {
 };
 
 const childVariants = {
-  visible: ({ value }) => ({
+  visible: ({ value, connected }) => ({
     y: -value,
-    skew: 10,
+    fill: connected ? "#f45b49" : "#ffffff",
     transition: {
       duration: 0.5,
       repeatType: "reverse",
@@ -62,42 +115,3 @@ const childVariants = {
   }),
   exit: { opacity: 0 },
 };
-
-const loader = (
-  <motion.svg
-    variants={loaderVariants}
-    initial="hidden"
-    animate="visible"
-    exit="exit"
-    width="30"
-    height="11"
-    viewBox="0 0 100 11"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 5 }}
-      cx="2.65137"
-      cy="8.79981"
-      r="2.54443"
-      fill="white"
-    />
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 10 }}
-      cx="25.7974"
-      cy="8.79981"
-      r="2.54443"
-      fill="white"
-    />
-    <motion.circle
-      variants={childVariants}
-      custom={{ value: 5 }}
-      cx="14.2247"
-      cy="5.6668"
-      r="5.11382"
-      fill="white"
-    />
-  </motion.svg>
-);

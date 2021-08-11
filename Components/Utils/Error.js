@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
+import styles from "../../styles/Notif.module.scss";
 
-const Error = ({ visible, message, styles, ...rest }) => {
+const Error = ({ visible, message, ...rest }) => {
   return (
     <AnimatePresence>
       {visible && (

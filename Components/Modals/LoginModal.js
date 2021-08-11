@@ -26,7 +26,12 @@ const modal = {
   exit: { y: -500 },
 };
 
-const LoginModal = ({ visible, setVisible, setRegisterVisible }) => {
+const LoginModal = ({
+  visible,
+  setVisible,
+  setRegisterVisible,
+  setForgotPassVisible,
+}) => {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
 
@@ -64,9 +69,7 @@ const LoginModal = ({ visible, setVisible, setRegisterVisible }) => {
 
     try {
       const response = await fetch(url, config);
-      console.log(response);
       const jsonResponse = await response.json();
-      console.log(jsonResponse);
       if (jsonResponse.error) {
         throw { detail: jsonResponse.error.detail };
       }
@@ -78,6 +81,7 @@ const LoginModal = ({ visible, setVisible, setRegisterVisible }) => {
         localStorage.setItem("user", JSON.stringify(jsonResponse));
         setCurrentUser(jsonResponse);
         setIsLoggedIn(true);
+        reset();
       }
       setLoading(false);
     } catch (err) {
@@ -159,15 +163,27 @@ const LoginModal = ({ visible, setVisible, setRegisterVisible }) => {
                   {errors?.password?.message}
                 </span>
               </motion.div>
-              <motion.div
-                className={styles.instead}
-                onClick={() => {
-                  setVisible(false);
-                  setRegisterVisible(true);
-                }}
-              >
-                <span> Don't have an account Yet? Sign Up Instead! </span>
-              </motion.div>
+              <div className={styles.extra}>
+                <motion.div
+                  className={styles.instead}
+                  onClick={() => {
+                    setVisible(false);
+                    setForgotPassVisible(true);
+                  }}
+                >
+                  <span>Forgot Password?</span>
+                </motion.div>
+                <motion.div
+                  className={styles.instead}
+                  onClick={() => {
+                    setVisible(false);
+                    setRegisterVisible(true);
+                  }}
+                >
+                  <span> Don't have an account Yet? Sign Up Instead! </span>
+                </motion.div>
+              </div>
+
               <motion.div className={styles.submit}>
                 <ButtonLoader value="Login" loading={loading} />
               </motion.div>

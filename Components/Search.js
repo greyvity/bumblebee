@@ -2,12 +2,13 @@ import styles from "../styles/Search.module.scss";
 import { useForm } from "react-hook-form";
 import { useAssets } from "../Context/AssetsContext";
 import { motion } from "framer-motion";
+import router from "next/router";
 
 const Search = () => {
   const { register, handleSubmit, errors, reset } = useForm();
   const { avatars } = useAssets();
-  const onSubmit = (values) => {
-    console.log(values);
+  const onSubmit = ({ query }) => {
+    router.push(`/search/${query}`);
   };
 
   return (
@@ -29,7 +30,7 @@ const Search = () => {
           <div className={`${styles.formGroup} ${styles.searchInput}`}>
             <input
               name="query"
-              rows="4"
+              // rows="4"
               {...register("query", {
                 required: {
                   value: true,
@@ -38,7 +39,7 @@ const Search = () => {
               })}
               placeholder="Search people, pages and posts"
             />
-            <span>{errors?.message?.message}</span>
+            <span>{errors?.query?.message}</span>
           </div>
           <div className={styles.searchIcon}>{searchIcon}</div>
           <div className={styles.submitIcon}>

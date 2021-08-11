@@ -4,18 +4,62 @@ import { useForm } from "react-hook-form";
 import { useAssets } from "../../Context/AssetsContext";
 import Avatar from "../Utils/Avatar";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EditProfileModal from "../Modals/EditProfileModal";
 import { useAuth } from "../../Context/AuthContext";
 import ButtonLoader from "../Utils/ButtonLoader";
+import { useData } from "../../Context/DataContext";
+import Notification from "../Utils/Notification";
 
-const UserInfo = ({ data, status }) => {
+const UserInfo = ({ data, status, setData, title = true }) => {
   const { register, handleSubmit, errors, reset } = useForm();
   const { avatars } = useAssets();
   const { editModal, setEditModal } = useAuth();
+  const { connections, connect, unFollow } = useData();
+  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [notif, setNotif] = useState(null);
 
-  const onSubmit = (values) => {
-    console.log(values);
+  useEffect(() => {
+    if (connections) {
+      const temp = connections?.following?.some(
+        (connection) => connection.username === data.username
+      );
+      if (temp) setConnected(true);
+      else setConnected(false);
+    }
+  }, [connections, data]);
+
+  let clearNotif;
+
+  const handleFollow = async () => {
+    setLoading(true);
+    if (clearNotif) {
+      clearTimeout(clearNotif);
+      setNotif(null);
+    }
+    const res = await connect(data.username);
+    setNotif(res.status);
+    clearNotif = setTimeout(() => {
+      setNotif(null);
+    }, 3000);
+    if (res.data) setData(res.data);
+    setLoading(false);
+  };
+
+  const handleUnfollow = async () => {
+    setLoading(true);
+    if (clearNotif) {
+      clearTimeout(clearNotif);
+      setNotif(null);
+    }
+    const res = await unFollow(data.username);
+    setNotif(res.status);
+    clearNotif = setTimeout(() => {
+      setNotif(null);
+    }, 3000);
+    if (res.data) setData(res.data);
+    setLoading(false);
   };
 
   return (
@@ -34,22 +78,24 @@ const UserInfo = ({ data, status }) => {
         className={styles.wrapper}
       >
         <motion.div className={styles.container}>
-          <motion.h1 className={styles.title}>Profile</motion.h1>
+          {title && <motion.h1 className={styles.title}>Profile</motion.h1>}
           <motion.div className={styles.profile}>
             <div className={styles.avatarContainer}>
               <Avatar
+                id={data.username}
                 value={data.persona}
                 style={{
                   borderRadius: "50%",
                   width: "150px",
                   height: "150px",
+                  border: "6px solid black",
                 }}
               />
             </div>
             <motion.div className={styles.information}>
               <motion.div className={styles.editContainer}>
-                <h1>{data.username}</h1>
-                {status ? (
+                <h1 className={styles.username}>{data.username}</h1>
+                {data && status ? (
                   <h2
                     onClick={() => {
                       setEditModal(true);
@@ -59,25 +105,51 @@ const UserInfo = ({ data, status }) => {
                     {pen}
                   </h2>
                 ) : (
-                  <div className={modalStyles.submit}>
-                    <ButtonLoader value="Connect" />
-                  </div>
+                  connections && (
+                    <div className={modalStyles.submit}>
+                      <ButtonLoader
+                        connected={connected}
+                        style={{
+                          marginTop: "0px",
+                        }}
+                        animate={{
+                          border: connected
+                            ? "2px solid #f45b49"
+                            : "0px solid #f45b49",
+                          background: !connected
+                            ? "rgba(244, 91, 73, 1)"
+                            : "rgba(244, 91, 73, 0)",
+                        }}
+                        loading={loading}
+                        value={connected ? "Unfollow" : "Follow"}
+                        onClick={connected ? handleUnfollow : handleFollow}
+                      />
+                    </div>
+                  )
                 )}
               </motion.div>
-              <h3>{data.connections_count} Connections</h3>
+              <div className={styles.follow}>
+                <h3>{data.following_count} Following</h3>|
+                <h3>
+                  {data.followers_count} Follower
+                  {data.followers_count === 1 ? "" : "s"}
+                </h3>
+              </div>
               <span className={styles.email}>
-                {" "}
                 {link} {data.email}
               </span>
-              <p>
-                {data.bio ||
-                  `Lorem ipsum dolor sit amet consectetur adipisicing elit. Magnam
-                accusantium nam nesciunt esse mollitia enim atque adipisci quia
-                quaerat ad!`}
+              <p className={styles.bio}>
+                {data.bio || "Edit profile to enter bio"}
               </p>
             </motion.div>
           </motion.div>
         </motion.div>
+        <Notification
+          style={{ marginTop: "-5px" }}
+          visible={notif}
+          message={notif?.message}
+          styles={styles}
+        />
       </motion.div>
     </>
   );

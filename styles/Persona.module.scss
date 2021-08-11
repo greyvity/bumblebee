@@ -1,0 +1,33 @@
+.wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+
+  .divider {
+    width: 3px;
+    border-radius: 10px;
+    background: black;
+    height: 100px;
+    flex: 0.1;
+
+    // border-right: 2px solid black;
+  }
+
+  .carousel {
+    width: 100%;
+    flex: 3;
+  }
+
+  .personaList {
+    display: flex;
+    justify-content: flex-start;
+    gap: 20px;
+    align-items: center;
+
+    & > div {
+      width: 200px;
+    }
+  }
+}

@@ -7,9 +7,11 @@ import { motion } from "framer-motion";
 import router from "next/router";
 import { useEffect } from "react";
 import { useAuth } from "../Context/AuthContext";
+import { useData } from "../Context/DataContext";
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
+  const { feed } = useData();
 
   useEffect(() => {
     if (!isLoggedIn) router.push("/");
@@ -30,83 +32,9 @@ export default function Home() {
         layout
         className={styles.main}
       >
-        {/* <motion.div
-          initial={{
-            border: "0px solid black",
-          }}
-          animate={{
-            border: "2px solid black",
-            width: "80%",
-            height: "100px",
-          }}
-          style={{ overflow: "hidden", position: "relative" }}
-          className={styles.animationContainer}
-        >
-          <motion.div
-            initial={{ borderRadius: "0%" }}
-            animate={{
-              background: "rgba(0,0,255,0.3)",
-              width: "102px",
-              borderRadius: "35%",
-              rotate: 180,
-              height: "100px",
-              scale: 2,
-              scale: [2, 3, 4, 3, 2],
-              transition: {
-                rotate: {
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  duration: 2.5,
-                },
-                scale: {
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  duration: 6,
-                },
-              },
-            }}
-            style={{ position: "absolute" }}
-            // className={styles.aniamtingContainer}
-          ></motion.div>
-          <motion.div
-            initial={{ borderRadius: "0%" }}
-            animate={{
-              background: "rgba(0,0,255,0.3)",
-              width: "100px",
-              borderRadius: "45%",
-              rotate: 360,
-              height: "100px",
-              scale: [2, 3.1, 3.9, 2.9, 2],
-              transition: {
-                rotate: {
-                  repeat: Infinity,
-                  // repeatType: "reverse",
-                  duration: 5,
-                },
-                scale: {
-                  repeat: Infinity,
-                  // repeatType: "reverse",
-                  duration: 6,
-                },
-              },
-            }}
-            style={{ position: "absolute", top: "10px" }}
-            // className={styles.aniamtingContainer}
-          ></motion.div>
-        </motion.div> */}
         <OnYourMind />
-        <Feed />
+        <Feed data={feed} title="Buzz around you" />
       </motion.main>
     </>
   );
 }
-
-// export async function getServerSideProps() {
-//   // Fetch data from external API
-//   const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/feed/post`);
-//   const data = await res.json();
-//   console.log(data);
-
-//   // Pass data to the page via props
-//   return { props: { data } };
-// }

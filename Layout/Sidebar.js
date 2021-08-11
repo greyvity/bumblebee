@@ -8,7 +8,7 @@ import { useData } from "../Context/DataContext";
 const Sidebar = () => {
   const { avatars } = useAssets();
 
-  const { logout } = useAuth();
+  const { logout, isLoggedIn } = useAuth();
   const { profile } = useData();
 
   const handleLogOut = async () => {
@@ -33,7 +33,10 @@ const Sidebar = () => {
       <div className={styles.container}>
         <div className={styles.top}>
           <div className={styles.logoContainer}>
-            <div className={styles.logo} onClick={() => router.push("/")}>
+            <div
+              className={styles.logo}
+              onClick={() => router.push(isLoggedIn ? "/home" : "/")}
+            >
               {logo}
             </div>
           </div>
@@ -48,8 +51,8 @@ const Sidebar = () => {
             {logoutIcon}
           </div>
           <Avatar
+            id={profile?.username}
             whileHover={{ scale: 1.1 }}
-            onClick={() => router.push(`/profile/${profile?.username}`)}
             value={profile?.persona}
             style={{ borderRadius: "50%" }}
           />

@@ -10,12 +10,15 @@
     flex-direction: column;
     justify-content: space-around;
     height: 90%;
+    width: 100%;
 
     .profile {
       display: flex;
       align-items: center;
+      width: 100%;
 
       .information {
+        width: 100%;
         display: flex;
         gap: 10px;
         flex-direction: column;
@@ -24,6 +27,12 @@
         .editContainer {
           display: flex;
           justify-content: space-between;
+          align-items: center;
+
+          .username {
+            margin-bottom: 0;
+            font-family: "Montserrat";
+          }
         }
 
         .edit {
@@ -37,11 +46,23 @@
 
 .title {
   font-family: Montserrat;
-  font-size: 24px;
-  margin-top: 5px;
+  font-size: 40.8298px;
+  margin-bottom: 20px;
 }
 
 .email {
+  color: blue;
+  cursor: pointer;
   font-weight: 500;
   font-size: 18.4259px;
+}
+
+.follow {
+  display: flex;
+  gap: 20px;
+}
+
+.bio {
+  font-size: 18px;
+  font-weight: 500;
 }

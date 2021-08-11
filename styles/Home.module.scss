@@ -1,14 +1,14 @@
+@import "mixins";
+
 .main {
   // height: 80%;
-  width: 100%;
-  height: 100%;
+  width: 95%;
   grid-area: 1 / 2 / span all / 3;
   overflow: auto;
-  justify-self: center;
-  padding-top: 30px;
+  justify-self: flex-start;
+  margin-top: 30px;
+  padding-top: 10px;
   padding-bottom: 0px;
-}
-
-.main::-webkit-scrollbar {
-  display: none;
+  margin-bottom: 20px;
+  @include scrollbars(8px, #f45b49);
 }

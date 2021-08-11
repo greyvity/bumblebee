@@ -3,42 +3,210 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import Avatar from "../Utils/Avatar";
+import { useData } from "../../Context/DataContext";
+import { useAuth } from "../../Context/AuthContext";
+import { useEffect, useState } from "react";
 
-const CardItem = ({ post }) => {
+const CardItem = ({ post, setFeed, temp }) => {
+  const { currentUser } = useAuth();
+  const { deleteBuzz, editBuzz, interactPostVote } = useData();
+  const [liked, setLiked] = useState(false);
+  const [disLiked, setDisLiked] = useState(false);
+  const [count, setCount] = useState({ likes: 0, dislikes: 0 });
+
+  useEffect(() => {
+    if (post) {
+      if (
+        post?.interaction?.upvote_ids?.some(
+          (vote) => vote === currentUser?.user_details?.id
+        )
+      ) {
+        setLiked(true);
+        setDisLiked(false);
+      } else if (
+        post?.interaction?.downvote_ids?.some(
+          (vote) => vote === currentUser?.user_details?.id
+        )
+      ) {
+        setDisLiked(true);
+        setLiked(false);
+      } else {
+        setDisLiked(false);
+        setLiked(false);
+      }
+    }
+  }, [post]);
+
+  useEffect(() => {
+    if (post) {
+      const likes = post?.interaction?.upvoted_count;
+      const dislikes = post?.interaction?.downvoted_count;
+      setCount({ likes, dislikes });
+    }
+  }, [post]);
+
+  const like = (
+    <motion.svg
+      whileTap={{
+        rotate: -30,
+        scale: 1.5,
+      }}
+      width="23"
+      height="22"
+      viewBox="0 0 23 22"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <motion.path
+        d="M12.7053 7.25035L12.4825 8.11642L13.3741 8.18501L20.681 8.74707C21.4116 8.81544 21.8691 9.31259 21.8691 9.87471V13.2393L20.3668 19.8254L20.3646 19.8352L20.3626 19.8451C20.2375 20.4701 19.8852 20.7497 19.4466 20.7497H11.1063C11.1062 20.7497 11.1062 20.7497 11.1062 20.7497C10.7837 20.7497 10.4634 20.6976 10.1575 20.5956L10.1574 20.5955L6.58081 19.4035L6.58069 19.4035C6.27481 19.3016 5.95451 19.2497 5.63211 19.2497C5.63205 19.2497 5.632 19.2497 5.63194 19.2497H0.869141V11.0007H5.25805H5.25851C5.45061 11.0005 5.63946 10.9512 5.8071 10.8574C5.97247 10.7649 6.11176 10.6321 6.21208 10.4715L12.0315 1.34351L13.2423 1.68728C13.6078 1.80222 13.7313 1.94688 13.788 2.07053C13.8599 2.22752 13.9026 2.52379 13.7805 3.07103L12.7053 7.25035Z"
+        strokeWidth="2"
+        stroke="#242424"
+        animate={{
+          stroke: liked ? "#F45B49" : "#242424",
+          fill: liked ? "rgba(244, 91, 73, 1)" : "rgba(244, 91, 73, 0)",
+        }}
+      />
+    </motion.svg>
+  );
+
+  const dislike = (
+    <motion.svg
+      whileTap={{
+        rotate: 30,
+        scale: 1.5,
+      }}
+      width="23"
+      height="22"
+      viewBox="0 0 23 22"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <motion.path
+        d="M10.033 14.7499L10.2558 13.8838L9.36416 13.8152L2.05732 13.2532C1.3267 13.1848 0.86914 12.6877 0.86914 12.1255L0.86914 8.76093L2.37145 2.17483L2.37368 2.16504L2.37565 2.1552C2.50073 1.53013 2.85306 1.25053 3.29164 1.25053L11.632 1.25053C11.632 1.25053 11.6321 1.25053 11.6321 1.25053C11.9545 1.25059 12.2749 1.30263 12.5807 1.40465L12.5809 1.40471L16.1575 2.59674L16.1576 2.59678C16.4635 2.69867 16.7838 2.75058 17.1062 2.75053C17.1062 2.75053 17.1063 2.75053 17.1063 2.75053L21.8691 2.75053L21.8691 10.9996L17.4802 10.9996L17.4798 10.9996C17.2877 10.9997 17.0988 11.049 16.9312 11.1428C16.7658 11.2353 16.6265 11.3681 16.5262 11.5288L10.7068 20.6567L9.49603 20.313C9.13053 20.198 9.00694 20.0534 8.95031 19.9297C8.87842 19.7727 8.83572 19.4765 8.95777 18.9292L10.033 14.7499Z"
+        stroke="#242424"
+        strokeWidth="2"
+        animate={{
+          stroke: disLiked ? "#F45B49" : "#242424",
+          fill: disLiked ? "rgba(244, 91, 73, 1)" : "rgba(244, 91, 73, 0)",
+        }}
+      />
+    </motion.svg>
+  );
+
   const interactions = [
     {
       id: 1,
       icon: like,
-      label: "upvotes",
-      count: post.upvotes,
+      label: count.likes === 1 ? "upvote" : "upvotes",
+      count: count.likes,
       classes: "likes",
+      onClick: async (e) => {
+        e.stopPropagation();
+        const res = await interactPostVote("upvote", post?.buzzid);
+        if (res.success) {
+          if (disLiked) setDisLiked(false);
+          setCount(({ likes, dislikes }) => {
+            let temp = {
+              likes: !liked ? likes + 1 : likes - 1,
+              dislikes: disLiked ? dislikes - 1 : dislikes,
+            };
+            if (liked) {
+              setLiked(false);
+            } else setLiked(true);
+            return temp;
+          });
+        }
+      },
+    },
+    {
+      id: 4,
+      icon: dislike,
+      label: count.dislikes === 1 ? "downvote" : "downvotes",
+      count: count.dislikes,
+      classes: "likes",
+      onClick: async (e) => {
+        e.stopPropagation();
+        const res = await interactPostVote("downvote", post?.buzzid);
+        if (res.success) {
+          if (liked) setLiked(false);
+          setCount(({ likes, dislikes }) => {
+            let temp = {
+              dislikes: !disLiked ? dislikes + 1 : dislikes - 1,
+              likes: liked ? likes - 1 : likes,
+            };
+            if (disLiked) {
+              setDisLiked(false);
+            } else setDisLiked(true);
+            return temp;
+          });
+        }
+      },
     },
     {
       id: 2,
       icon: comment,
-      label: "comments",
-      count: post.numComments,
+      label: post?.interaction?.commented_count === 1 ? "comment" : "comments",
+      count: post?.interaction?.commented_count,
       classes: "comments",
     },
-    { id: 3, icon: buzz, label: "buzz", count: post.rebuzz, classes: "rebuzz" },
+    {
+      id: 3,
+      icon: rebuzzz,
+      label: "rebuzz",
+      count: post?.interaction?.rebuzzed_count,
+      classes: "rebuzz",
+    },
   ];
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    await deleteBuzz(post.buzzid, setFeed);
+    if (temp) await temp();
+  };
 
   const router = useRouter();
 
   return (
-    <div className={styles.card}>
+    <div
+      className={styles.card}
+      style={{ cursor: "pointer" }}
+      onClick={() => router.push(`/buzz/${post.buzzid}`)}
+    >
       <div className={styles.profileContainer}>
         {/* <div className={styles.profile}>{avatars[0]}</div> */}
-        <Avatar value={post.author.persona} style={{ margin: "auto" }} />
+        <Avatar
+          id={post.author.username}
+          value={post.author.persona}
+          style={{ margin: "auto" }}
+        />
       </div>
       <div className={styles.postContainer}>
-        <h3 className={styles.username}> {post.author.username} </h3>
+        <motion.div layout className={styles.top}>
+          <motion.h3
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/profile/${post.author.username}`);
+            }}
+            layout
+            className={styles.username}
+          >
+            {post.author.username}
+          </motion.h3>
+          {post.author.username === currentUser?.user_details?.username && (
+            <>
+              <motion.span layout>{pen}</motion.span>
+              <motion.span onClick={handleDelete} layout>
+                {bin}
+              </motion.span>
+            </>
+          )}
+        </motion.div>
         <div className={styles.content}>
           {post.content && <p className={styles.postDesc}>{post.content}</p>}
           {post?.images?.length !== 0 && (
             <motion.div
               className={styles.imgContainer}
-              layoutId={post.images[0].image}
+              layoutId={post?.images[0]?.image}
               // animate={{ x: 0 }}
               transition={{
                 ease: [0.6, 0.01, -0.05, 0.95],
@@ -59,19 +227,20 @@ const CardItem = ({ post }) => {
           )}
         </div>
         <div className={styles.info}>
-          {interactions.map(({ id, classes, icon, likes, label }) => (
+          {interactions.map(({ id, classes, icon, count, label, onClick }) => (
             <motion.span
               style={{ cursor: "pointer" }}
               whileHover={{ scale: 1.05 }}
               key={id}
               className={styles[classes]}
+              onClick={onClick}
             >
               {icon}
-              {likes} {label}
+              {count} {label}
             </motion.span>
           ))}
 
-          <span className={styles.save}> {save} </span>
+          {/* <span className={styles.save}> {save} </span> */}
         </div>
       </div>
     </div>
@@ -79,21 +248,6 @@ const CardItem = ({ post }) => {
 };
 
 export default CardItem;
-
-const like = (
-  <svg
-    width="23"
-    height="21"
-    viewBox="0 0 23 21"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M20.5213 2.56619C19.3439 1.38847 17.7829 0.672431 16.1223 0.548287C14.4616 0.424144 12.8115 0.900141 11.4721 1.88972C10.0611 0.84023 8.3049 0.364343 6.55709 0.557887C4.80927 0.751431 3.19971 1.60003 2.05252 2.93279C0.905328 4.26556 0.305726 5.98349 0.374459 7.74065C0.443191 9.4978 1.17515 11.1636 2.42294 12.4027L10.6848 20.6645C10.7878 20.7685 10.9105 20.851 11.0456 20.9073C11.1808 20.9636 11.3257 20.9926 11.4721 20.9926C11.6185 20.9926 11.7635 20.9636 11.8986 20.9073C12.0337 20.851 12.1564 20.7685 12.2595 20.6645L20.5213 12.4027C21.1674 11.757 21.68 10.9903 22.0297 10.1464C22.3794 9.30249 22.5594 8.39795 22.5594 7.48446C22.5594 6.57097 22.3794 5.66643 22.0297 4.82253C21.68 3.97863 21.1674 3.21191 20.5213 2.56619ZM18.9577 10.8391L11.4721 18.3135L3.98659 10.8391C3.32695 10.1767 2.87759 9.33427 2.69489 8.41748C2.5122 7.50069 2.60429 6.55036 2.95963 5.68571C3.31497 4.82105 3.91772 4.08058 4.69227 3.55718C5.46683 3.03378 6.3787 2.75076 7.31349 2.74362C8.56231 2.74668 9.75887 3.24525 10.6404 4.12983C10.7435 4.23377 10.8661 4.31627 11.0013 4.37257C11.1364 4.42888 11.2814 4.45786 11.4278 4.45786C11.5742 4.45786 11.7191 4.42888 11.8542 4.37257C11.9894 4.31627 12.112 4.23377 12.2151 4.12983C13.1226 3.34344 14.295 2.9312 15.4949 2.97653C16.6949 3.02187 17.8328 3.52139 18.6784 4.37401C19.524 5.22663 20.014 6.36866 20.0494 7.56895C20.0848 8.76924 19.6628 9.93815 18.8689 10.8391H18.9577Z"
-      fill="black"
-    />
-  </svg>
-);
 
 const comment = (
   <svg
@@ -111,7 +265,7 @@ const comment = (
   </svg>
 );
 
-const buzz = (
+const rebuzzz = (
   <svg
     width="22"
     height="21"
@@ -126,17 +280,99 @@ const buzz = (
   </svg>
 );
 
-const save = (
-  <svg
-    width="14"
-    height="20"
-    viewBox="0 0 14 20"
+const parentVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  hover: {
+    scale: 1.5,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
+const parent2Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, scale: 2.5 },
+  hover: {
+    scale: 2.8,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
+const childVariants = {
+  hidden: { x: 10, scale: 0 },
+  visible: { x: 0, scale: 1 },
+  hover: {
+    scale: 1,
+    rotate: 10,
+    transition: {
+      duration: 0.3,
+      ease: [0.16, -0.5, 0.78, 1.43],
+    },
+  },
+};
+
+const child2Variants = {
+  hidden: { x: 10, scale: 0 },
+  visible: { x: 0, scale: 1 },
+  hover: {
+    scale: 0.9,
+    y: -1,
+    rotate: -10,
+    transition: {
+      duration: 0.3,
+      ease: [0.16, -0.5, 0.78, 1.43],
+    },
+  },
+};
+
+const pen = (
+  <motion.svg
+    variants={parentVariants}
+    initial="hidden"
+    animate="visible"
+    whileHover="hover"
+    width="36"
+    height="36"
+    viewBox="0 0 36 36"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <path
-      d="M11.0329 0.354248H3.52602C2.77941 0.354248 2.06339 0.650835 1.53546 1.17876C1.00753 1.70669 0.710945 2.42272 0.710945 3.16932V18.183C0.710288 18.3484 0.753335 18.511 0.835726 18.6543C0.918117 18.7977 1.03693 18.9167 1.18012 18.9994C1.32277 19.0818 1.48459 19.1251 1.6493 19.1251C1.81402 19.1251 1.97583 19.0818 2.11848 18.9994L7.27945 16.0154L12.4404 18.9994C12.5834 19.0805 12.7452 19.1225 12.9096 19.1214C13.074 19.1225 13.2358 19.0805 13.3788 18.9994C13.522 18.9167 13.6408 18.7977 13.7232 18.6543C13.8056 18.511 13.8486 18.3484 13.8479 18.183V3.16932C13.8479 2.42272 13.5514 1.70669 13.0234 1.17876C12.4955 0.650835 11.7795 0.354248 11.0329 0.354248ZM11.9712 16.5597L7.74863 14.1199C7.60598 14.0376 7.44416 13.9942 7.27945 13.9942C7.11473 13.9942 6.95292 14.0376 6.81027 14.1199L2.58766 16.5597V3.16932C2.58766 2.92045 2.68652 2.68178 2.8625 2.5058C3.03847 2.32983 3.27715 2.23096 3.52602 2.23096H11.0329C11.2817 2.23096 11.5204 2.32983 11.6964 2.5058C11.8724 2.68178 11.9712 2.92045 11.9712 3.16932V16.5597Z"
-      fill="black"
+    <motion.path
+      variants={childVariants}
+      d="M32.3672 11.5339C32.3683 11.3422 32.3316 11.1521 32.2591 10.9745C32.1866 10.797 32.0797 10.6356 31.9447 10.4994L25.7667 4.32138C25.6305 4.18634 25.469 4.0795 25.2915 4.00699C25.114 3.93447 24.9239 3.89772 24.7321 3.89883C24.5404 3.89772 24.3503 3.93447 24.1727 4.00699C23.9952 4.0795 23.8338 4.18634 23.6976 4.32138L19.5741 8.44492L3.64816 24.3708C3.51312 24.507 3.40628 24.6684 3.33377 24.846C3.26126 25.0235 3.2245 25.2136 3.22561 25.4053V31.5834C3.22561 31.9698 3.37912 32.3404 3.65238 32.6137C3.92564 32.8869 4.29625 33.0405 4.68269 33.0405H10.8607C11.0646 33.0515 11.2685 33.0197 11.4593 32.9469C11.6501 32.8741 11.8234 32.762 11.9681 32.6179L27.8066 16.692L31.9447 12.6413C32.0777 12.5001 32.186 12.3376 32.2652 12.1605C32.2793 12.0443 32.2793 11.9269 32.2652 11.8108C32.2721 11.743 32.2721 11.6746 32.2652 11.6068L32.3672 11.5339ZM10.2633 30.1263H6.13977V26.0027L20.6086 11.5339L24.7321 15.6575L10.2633 30.1263ZM26.7866 13.603L22.6631 9.47945L24.7321 7.42496L28.8411 11.5339L26.7866 13.603Z"
+      fill="#F45B49"
     />
-  </svg>
+  </motion.svg>
+);
+
+const bin = (
+  <motion.svg
+    variants={parent2Variants}
+    initial="hidden"
+    animate="visible"
+    whileHover="hover"
+    width="18"
+    height="22"
+    viewBox="0 0 30 22"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <motion.path
+      variants={childVariants}
+      d="M2.3877 6.28687V17.4963C2.3877 18.3071 2.68628 19.0847 3.21776 19.658C3.74924 20.2314 4.47008 20.5534 5.22171 20.5534H12.7791C13.5307 20.5534 14.2515 20.2314 14.783 19.658C15.3145 19.0847 15.6131 18.3071 15.6131 17.4963V6.28687"
+      stroke="#F45B49"
+      strokeWidth="2"
+    />
+    <motion.path
+      variants={child2Variants}
+      d="M16.884 5.44653H12.9418M12.9418 5.44653V4.44653C12.9418 3.65088 12.6303 2.88782 12.0758 2.32521C11.5213 1.7626 10.7693 1.44653 9.98514 1.44653H7.9356C7.15145 1.44653 6.47787 1.7626 5.92339 2.32521C5.36892 2.88782 5.05741 3.65088 5.05741 4.44653V5.44653M12.9418 5.44653H5.05741M5.05741 5.44653H1.11523"
+      stroke="#F45B49"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </motion.svg>
 );

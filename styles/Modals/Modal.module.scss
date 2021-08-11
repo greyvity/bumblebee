@@ -2,8 +2,6 @@
   position: absolute;
   top: 0;
   left: 0;
-  //   bottom: 0;
-  //   right: 0;
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
@@ -79,44 +77,18 @@
   right: 50px;
 }
 
-.message {
-  width: 100%;
-  min-height: 50px;
+.extra {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-
-  padding: 12px 20px;
-  border-radius: 5px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-
-  span {
-    font-weight: 500;
-    font-size: 20px;
-  }
-}
-
-.successMessage {
-  background-color: rgba(144, 238, 144, 0.329);
-  border: 3px solid rgb(29, 235, 1);
-  span {
-    color: green;
-  }
-}
-
-.errorMessage {
-  background-color: rgba(243, 145, 145, 0.377);
-  border: 3px solid rgb(255, 88, 88);
-  span {
-    color: rgb(128, 0, 0);
-  }
+  width: 100%;
 }
 
 .instead {
   cursor: pointer;
   font-family: "Montserrat";
   text-align: left;
-  width: 100%;
+  // width: 100%;
   margin-top: -20px;
   font-weight: 500;
 

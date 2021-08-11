@@ -6,8 +6,25 @@ import { useData } from "../../Context/DataContext";
 const MayKnow = () => {
   const { suggestions } = useData();
 
+  const variants = {
+    closed: {
+      x: 100,
+      opacity: 0,
+    },
+    open: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.3,
+        delay: 0.6,
+      },
+    },
+  };
+
   return (
     <motion.div
+      layout
       initial={{ y: 500, opacity: 0 }}
       animate={{
         y: 0,
@@ -22,16 +39,13 @@ const MayKnow = () => {
     >
       <div className={styles.container}>
         <h1 className={styles.title}> {knowIcon} People Your May Know </h1>
-        <motion.div className={styles.itemContainer}>
-          {suggestions?.map((item) => (
-            <Item key={item.userid} item={item} />
-          ))}
-          {suggestions?.map((item) => (
-            <Item key={item.userid} item={item} />
-          ))}
-          {suggestions?.map((item) => (
-            <Item key={item.userid} item={item} />
-          ))}
+        <motion.div
+          layout
+          initial="closed"
+          animate="open"
+          variants={variants}
+          className={styles.itemContainer}
+        >
           {suggestions?.map((item) => (
             <Item key={item.userid} item={item} />
           ))}

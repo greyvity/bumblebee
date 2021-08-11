@@ -6,11 +6,17 @@ export function useAssets() {
 }
 
 export function AssetsProvider({ children }) {
-  const [loading, setLoading] = useState(false);
-
   const avatars = [maulie, sarah];
 
-  const value = { avatars };
+  const avatarImgs = [
+    "/assets/sarah.svg",
+    "/assets/mohommad.svg",
+    "/assets/Kathy.svg",
+    "/assets/Maulie.svg",
+    "/assets/Hector.svg",
+  ];
+
+  const value = { avatars, avatarImgs };
 
   return (
     <AssetsContext.Provider value={value}>{children}</AssetsContext.Provider>

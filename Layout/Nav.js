@@ -6,6 +6,7 @@ import Search from "../Components/Search";
 import { useAuth } from "../Context/AuthContext";
 import LoginModal from "../Components/Modals/LoginModal";
 import RegisterModal from "../Components/Modals/RegisterModal";
+import ForgotPasswordModal from "../Components/Modals/ForgotPasswordModal";
 
 const links = [
   { to: "", name: "Login", label: "login" },
@@ -13,8 +14,14 @@ const links = [
 ];
 
 const Nav = () => {
-  const { loginVisible, setLoginVisible, setRegisterVisible, registerVisible } =
-    useAuth();
+  const {
+    loginVisible,
+    setForgotPassVisible,
+    forgotPassVisible,
+    setLoginVisible,
+    setRegisterVisible,
+    registerVisible,
+  } = useAuth();
 
   return (
     <>
@@ -49,9 +56,6 @@ const Nav = () => {
                 />
               </svg>
             </div>
-            <div className={navStyles.searchContainer}>
-              <Search />
-            </div>
             <nav className={navStyles.nav}>
               <ul>
                 {links.map((link, i) => (
@@ -62,10 +66,8 @@ const Nav = () => {
                     label={link.label}
                     onClick={() => {
                       // setActive(link.to);
-                      console.log("hi");
                       if (link.label === "login") setLoginVisible(true);
                       else if (link.label === "signup") {
-                        console.log("bye");
                         setRegisterVisible(true);
                       }
                     }}
@@ -85,6 +87,12 @@ const Nav = () => {
         setRegisterVisible={setRegisterVisible}
         visible={loginVisible}
         setVisible={setLoginVisible}
+        setForgotPassVisible={setForgotPassVisible}
+      />
+      <ForgotPasswordModal
+        setLoginVisible={setLoginVisible}
+        visible={forgotPassVisible}
+        setVisible={setForgotPassVisible}
       />
     </>
   );

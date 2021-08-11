@@ -6,6 +6,22 @@ import { useData } from "../../Context/DataContext";
 const Notifications = () => {
   const { notifs } = useData();
 
+  const variants = {
+    closed: {
+      x: 100,
+      opacity: 0,
+    },
+    open: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.2,
+        delay: 0.5,
+      },
+    },
+  };
+
   return (
     <motion.div
       initial={{ x: 500, opacity: 0 }}
@@ -22,9 +38,15 @@ const Notifications = () => {
     >
       <div className={styles.container}>
         <h1 className={styles.title}> {notifIcon} Notifications </h1>
-        <motion.div className={styles.itemContainer}>
-          {notifs?.map((notif) => (
-            <Item key={notif.agent_id} item={notif} />
+        <motion.div
+          variants={variants}
+          initial="closed"
+          animate="open"
+          layout
+          className={styles.itemContainer}
+        >
+          {notifs?.map((notif, i) => (
+            <Item key={i} item={notif} />
           ))}
         </motion.div>
       </div>

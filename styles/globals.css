@@ -33,6 +33,7 @@ body::-webkit-scrollbar {
   grid-template-rows: repeat(11, minmax(0, 1fr));
   height: 1080px;
   width: 100vw;
+  overflow: hidden;
 }
 
 svg {
@@ -41,4 +42,16 @@ svg {
 
 .pointer {
   cursor: pointer;
+}
+
+.loading {
+  background-color: #ffffff;
+}
+
+.loading-title {
+  position: absolute;
+  bottom: 300px;
+  font-family: "Montserrat";
+
+  /* margin-bottom: 200px; */
 }

@@ -16,18 +16,20 @@ function MyApp({ Component, pageProps, router }) {
   useEffect(() => {
     const handleStart = (url) => {
       console.log(`Loading: ${url}`);
-      if (url === "/home" || url.split("/")[1] === "profile") setShow(true);
+      if (
+        url === "/home" ||
+        url.split("/")[1] === "profile" ||
+        url.split("/")[1] === "search"
+      )
+        setShow(true);
       else {
         setShow(false);
       }
     };
     const handleStop = () => {
       // NProgress.done();
-      console.log("stopped");
     };
     handleStart(router.route);
-
-    console.log("hi");
 
     router.events.on("routeChangeStart", handleStart);
     router.events.on("routeChangeComplete", handleStop);
@@ -62,7 +64,11 @@ function MyApp({ Component, pageProps, router }) {
             >
               <div className="main">
                 {/* <OnYourMind /> */}
-                <Component {...pageProps} key={router.route} />
+                <Component
+                  setShow={setShow}
+                  {...pageProps}
+                  key={router.route}
+                />
                 <AnimatePresence>
                   {show && (
                     <>

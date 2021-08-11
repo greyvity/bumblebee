@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "../../Context/AuthContext";
 import { useData } from "../../Context/DataContext";
 import styles from "../../styles/Modals/Modal.module.scss";
+import PersonaList from "../Profile/PersonaList";
 import Error from "../Utils/Error";
 import Notification from "../Utils/Notification";
 
@@ -19,7 +20,7 @@ const backdrop = {
 const modal = {
   hidden: { y: -500, opacity: 0 },
   visible: {
-    y: 80,
+    y: 50,
     opacity: 1,
     transition: { delay: 0.3, duration: 0.5 },
   },
@@ -31,6 +32,10 @@ const EditProfileModal = () => {
   const { fetchProfile, updateProfile, profile } = useData();
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [active, setActive] = useState(0);
+  const [bio, setBio] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
 
   const {
     register,
@@ -40,7 +45,15 @@ const EditProfileModal = () => {
     watch,
     setError,
     clearErrors,
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      email,
+      bio,
+      username,
+    },
+  });
+
+  let notif;
 
   useEffect(() => {
     return () => {
@@ -48,9 +61,34 @@ const EditProfileModal = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!editModal && profile) {
+      setBio(profile.bio);
+      setUsername(profile.username);
+      setEmail(profile.email);
+      setActive(profile.persona);
+    }
+  }, [profile, editModal]);
+
+  useEffect(() => {
+    reset({
+      email,
+      bio,
+      username,
+    });
+  }, [reset, email, bio, username]);
+
   async function onSubmitForm(values) {
     setLoading(true);
-    await updateProfile();
+    values["persona"] = active;
+    const res = await updateProfile(values);
+    if (res.success) {
+      setNotification("Profile Updated Successfully");
+      notif = setTimeout(() => {
+        setNotification(null);
+        setEditModal(false);
+      }, 3000);
+    }
     setLoading(false);
   }
 
@@ -67,24 +105,28 @@ const EditProfileModal = () => {
           // animate={{ opacity: 1 }}
           // exit={{}}
         >
-          <motion.div layout className={styles.modal} variants={modal}>
+          <motion.div
+            // layout
+            className={styles.modal}
+            variants={modal}
+          >
             <motion.h1 className={styles["modal-heading"]}>
               Edit Profile
             </motion.h1>
+            <PersonaList active={active} setActive={setActive} />
             <Error
               visible={errors?.manual?.message}
               message={errors?.manual?.message}
               styles={styles}
             />
             <Notification
+              visible={notification}
               message={notification}
               styles={styles}
               clear={() => setNotification(null)}
               setNotification={setNotification}
             />
-
             <motion.div className={styles.chooseAvatar}></motion.div>
-
             <motion.form onSubmit={handleSubmit(onSubmitForm)}>
               <motion.div className={styles.formGroup}>
                 <label htmlFor="email">Email</label>
@@ -146,9 +188,7 @@ const EditProfileModal = () => {
                   })}
                   placeholder="Enter your bio"
                 />
-                <span className={styles.error}>
-                  {errors?.username?.message}
-                </span>
+                <span className={styles.error}>{errors?.bio?.message}</span>
               </motion.div>
               <motion.div className={styles.formGroup}>
                 <label htmlFor="pass">Password</label>
@@ -192,7 +232,13 @@ const EditProfileModal = () => {
                 </AnimateSharedLayout>
               </motion.div>
             </motion.form>
-            <span className={styles.cancel} onClick={() => setEditModal(false)}>
+            <span
+              className={styles.cancel}
+              onClick={() => {
+                if (notif) clearTimeout(notif);
+                setEditModal(false);
+              }}
+            >
               {cancel}
             </span>
           </motion.div>
